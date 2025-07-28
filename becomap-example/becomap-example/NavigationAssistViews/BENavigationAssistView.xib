@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BENavigationAssistView" customModule="beCoMapDemo" customModuleProvider="target">
+            <connections>
+                <outlet property="assistViewHeight" destination="NmX-pX-P9M" id="ltq-SK-R5V"/>
+                <outlet property="contentView" destination="iN0-l3-epB" id="MtY-2a-pJE"/>
+                <outlet property="floorListViewHeight" destination="gVV-ob-gku" id="KdQ-T5-5n6"/>
+                <outlet property="floorNameLabel" destination="hk0-QG-mQO" id="aXc-Im-5aw"/>
+                <outlet property="floorSwitcheContentView" destination="zOS-nY-BVj" id="Dl9-BY-9Q8"/>
+                <outlet property="floorSwitcherView" destination="eRM-1c-8bl" id="TdS-gB-8bN"/>
+                <outlet property="pointNameLabel" destination="tBq-5O-iFr" id="lqL-zB-h8Q"/>
+                <outlet property="previewBtnTrailingConstraint" destination="tSq-jH-eTj" id="d1N-cI-Buy"/>
+                <outlet property="startNavBtn" destination="kh7-e8-9at" id="40c-xq-MKq"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="255"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3mQ-8G-Ixd" customClass="BEShadowView" customModule="beCoMapDemo" customModuleProvider="target">
+                    <rect key="frame" x="8" y="17" width="398" height="222"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Workstation" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tBq-5O-iFr">
+                            <rect key="frame" x="13" y="21" width="92" height="21"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Second Floor" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hk0-QG-mQO">
+                            <rect key="frame" x="13" y="47" width="91" height="18"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <color key="textColor" name="BECoolGray"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DRA-ja-pGO">
+                            <rect key="frame" x="173" y="177" width="117" height="30"/>
+                            <color key="backgroundColor" name="BEThemaBlue"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="117" id="M9K-fQ-yk7"/>
+                                <constraint firstAttribute="height" constant="30" id="kGj-NS-f8w"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <state key="normal" title=" Preview" image="ico_be_preview">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="borderRadius">
+                                    <real key="value" value="15"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="previewTapped:" destination="-1" eventType="touchUpInside" id="84S-zj-e2F"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7zl-LP-UOo">
+                            <rect key="frame" x="73" y="177" width="90" height="30"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="90" id="bMc-0f-CWh"/>
+                            </constraints>
+                            <state key="normal" title="Cancel"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="borderWidth">
+                                    <real key="value" value="1"/>
+                                </userDefinedRuntimeAttribute>
+                                <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
+                                    <color key="value" name="BEThemaBlue"/>
+                                </userDefinedRuntimeAttribute>
+                                <userDefinedRuntimeAttribute type="number" keyPath="borderRadius">
+                                    <real key="value" value="15"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="cancelTapped:" destination="-1" eventType="touchUpInside" id="Bo6-pD-Yiu"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kh7-e8-9at">
+                            <rect key="frame" x="298" y="177" width="93" height="30"/>
+                            <color key="backgroundColor" name="BEThemaBlue"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="30" id="AJO-jT-Khc"/>
+                                <constraint firstAttribute="width" constant="93" id="tq3-3C-Wou"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <state key="normal" title=" Start" image="ico_be_start_nav">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="borderRadius">
+                                    <real key="value" value="15"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="startNavTapped:" destination="-1" eventType="touchUpInside" id="dPw-Kp-6n1"/>
+                            </connections>
+                        </button>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eRM-1c-8bl">
+                            <rect key="frame" x="0.0" y="79" width="398" height="80"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sPo-ZT-CNr">
+                                    <rect key="frame" x="14" y="0.0" width="370" height="0.5"/>
+                                    <color key="backgroundColor" name="BESilverGray"/>
+                                    <constraints>
+                                        <constraint firstAttribute="height" constant="0.5" id="JHk-L0-Ayp"/>
+                                    </constraints>
+                                </view>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your route covers multiple levels" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WpR-mH-VJD">
+                                    <rect key="frame" x="14" y="12.5" width="222" height="18"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                    <color key="textColor" name="BECoolGray"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zOS-nY-BVj">
+                                    <rect key="frame" x="14" y="43" width="370" height="31"/>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                    <constraints>
+                                        <constraint firstAttribute="height" constant="31" id="mUo-g7-Hqr"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                            <constraints>
+                                <constraint firstItem="WpR-mH-VJD" firstAttribute="leading" secondItem="sPo-ZT-CNr" secondAttribute="leading" id="235-kM-Qdy"/>
+                                <constraint firstItem="zOS-nY-BVj" firstAttribute="top" secondItem="eRM-1c-8bl" secondAttribute="top" constant="43" id="2IO-fE-KUM"/>
+                                <constraint firstItem="WpR-mH-VJD" firstAttribute="top" secondItem="sPo-ZT-CNr" secondAttribute="bottom" constant="12" id="WhS-h5-q07"/>
+                                <constraint firstItem="zOS-nY-BVj" firstAttribute="leading" secondItem="eRM-1c-8bl" secondAttribute="leading" constant="14" id="XaI-rT-eFY"/>
+                                <constraint firstAttribute="trailing" secondItem="zOS-nY-BVj" secondAttribute="trailing" constant="14" id="Z4S-pH-NQj"/>
+                                <constraint firstItem="sPo-ZT-CNr" firstAttribute="leading" secondItem="eRM-1c-8bl" secondAttribute="leading" constant="14" id="ZPN-vg-mub"/>
+                                <constraint firstAttribute="height" constant="80" id="gVV-ob-gku"/>
+                                <constraint firstAttribute="trailing" secondItem="sPo-ZT-CNr" secondAttribute="trailing" constant="14" id="vsy-g9-Kzp"/>
+                                <constraint firstItem="sPo-ZT-CNr" firstAttribute="top" secondItem="eRM-1c-8bl" secondAttribute="top" id="zR4-d3-l9H"/>
+                            </constraints>
+                        </view>
+                    </subviews>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                    <constraints>
+                        <constraint firstItem="eRM-1c-8bl" firstAttribute="top" secondItem="hk0-QG-mQO" secondAttribute="bottom" constant="14" id="1Kg-UE-PgI"/>
+                        <constraint firstItem="7zl-LP-UOo" firstAttribute="bottom" secondItem="DRA-ja-pGO" secondAttribute="bottom" id="6bC-Dq-VQV"/>
+                        <constraint firstItem="eRM-1c-8bl" firstAttribute="leading" secondItem="3mQ-8G-Ixd" secondAttribute="leading" id="6cc-8d-AkM"/>
+                        <constraint firstItem="hk0-QG-mQO" firstAttribute="top" secondItem="tBq-5O-iFr" secondAttribute="bottom" constant="5" id="9vz-go-hbD"/>
+                        <constraint firstAttribute="trailing" secondItem="kh7-e8-9at" secondAttribute="trailing" constant="7" id="DNh-ph-1kJ"/>
+                        <constraint firstItem="hk0-QG-mQO" firstAttribute="leading" secondItem="tBq-5O-iFr" secondAttribute="leading" id="Hev-qJ-GGN"/>
+                        <constraint firstItem="DRA-ja-pGO" firstAttribute="leading" secondItem="7zl-LP-UOo" secondAttribute="trailing" constant="10" id="JEo-ew-UGa"/>
+                        <constraint firstAttribute="height" constant="222" id="NmX-pX-P9M"/>
+                        <constraint firstItem="tBq-5O-iFr" firstAttribute="top" secondItem="3mQ-8G-Ixd" secondAttribute="top" constant="21" id="Sut-qz-gPs"/>
+                        <constraint firstAttribute="trailing" secondItem="DRA-ja-pGO" secondAttribute="trailing" constant="108" id="tSq-jH-eTj"/>
+                        <constraint firstItem="DRA-ja-pGO" firstAttribute="bottom" secondItem="kh7-e8-9at" secondAttribute="bottom" id="ttJ-65-5cr"/>
+                        <constraint firstItem="tBq-5O-iFr" firstAttribute="leading" secondItem="3mQ-8G-Ixd" secondAttribute="leading" constant="13" id="ufN-6a-8ha"/>
+                        <constraint firstAttribute="trailing" secondItem="eRM-1c-8bl" secondAttribute="trailing" id="xhW-eZ-jx8"/>
+                        <constraint firstAttribute="bottom" secondItem="kh7-e8-9at" secondAttribute="bottom" constant="15" id="yBR-5O-kfx"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="20"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="3mQ-8G-Ixd" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="UYK-4s-QKe"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="3mQ-8G-Ixd" secondAttribute="bottom" constant="16" id="asA-eY-Ueq"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="3mQ-8G-Ixd" secondAttribute="trailing" constant="8" id="jda-nw-ByC"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <point key="canvasLocation" x="131.8840579710145" y="-38.504464285714285"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="ico_be_preview" width="12.5" height="14.5"/>
+        <image name="ico_be_start_nav" width="16" height="16"/>
+        <namedColor name="BECoolGray">
+            <color red="0.55699998140335083" green="0.56099998950958252" blue="0.56099998950958252" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="BESilverGray">
+            <color red="0.77999997138977051" green="0.77999997138977051" blue="0.80000001192092896" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="BEThemaBlue">
+            <color red="0.11372549019607843" green="0.62745098039215685" blue="0.94509803921568625" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

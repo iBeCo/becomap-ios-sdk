@@ -1,0 +1,231 @@
+---
+sidebar_position: 1
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Overview
+
+The Beco iOS SDK provides comprehensive indoor mapping and navigation capabilities for iOS applications. Built with a hybrid architecture, it combines native iOS performance with advanced web-based mapping technologies.
+
+## Key Features
+
+- **🗺️ Indoor Mapping**: Multi-floor building maps with interactive navigation
+- **📍 Location Services**: Search, selection, and management of points of interest
+- **🧭 Route Planning**: Multi-floor navigation with waypoint support
+- **🏢 Floor Switching**: Seamless navigation between building floors
+- **⚡ Real-time Updates**: Live events, happenings, and dynamic content
+- **♿ Accessibility**: Support for accessible route planning
+- **🎯 High Performance**: Cached data access for optimal performance
+
+## Requirements
+
+- **iOS**: 13.0 or later
+- **Xcode**: 12.0 or later
+- **Swift**: 5.0 or later
+- **Credentials**: Valid Beco client credentials
+
+## Installation
+
+### Swift Package Manager (Recommended)
+
+Add the Beco iOS SDK to your project using Swift Package Manager:
+
+1. In Xcode, go to **File → Add Package Dependencies**
+2. Enter the repository URL:
+   ```
+   https://github.com/sayone-tech/becomap-ios-sdk
+   ```
+3. Select the version and add to your target
+
+### Manual Integration
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/sayone-tech/becomap-ios-sdk.git
+   ```
+2. Drag the `becomap-ios` folder into your Xcode project
+3. Add the framework as a dependency to your target
+
+## Quick Start
+
+### Basic Setup
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+import UIKit
+import becomap_ios
+
+class MapViewController: UIViewController {
+    var mapView: BCMapView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupMapView()
+    }
+    
+    private func setupMapView() {
+        mapView = BCMapView()
+        mapView.delegate = self
+        view.addSubview(mapView)
+        
+        // Setup constraints
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        // Load your site
+        mapView.renderSiteWith(
+            clientId: "your_client_id",
+            clientSecret: "your_client_secret",
+            siteId: "your_site_id"
+        )
+    }
+}
+
+extension MapViewController: BCMapViewDelegate {
+    func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+        print("✅ Site loaded: \(site.siteName ?? "Unknown")")
+    }
+    
+    func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+        print("❌ Error: \(payload)")
+    }
+    
+    func mapView(_ mapView: BCMapView, didLoadData success: Bool) {
+        if success {
+            let locations = mapView.getLocations()
+            let categories = mapView.getCategories()
+            print("Loaded \(locations.count) locations, \(categories.count) categories")
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+#import <UIKit/UIKit.h>
+#import <becomap_ios/becomap_ios.h>
+
+@interface MapViewController : UIViewController <BCMapViewDelegate>
+@property (nonatomic, strong) BCMapView *mapView;
+@end
+
+@implementation MapViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self setupMapView];
+}
+
+- (void)setupMapView {
+    self.mapView = [[BCMapView alloc] init];
+    self.mapView.delegate = self;
+    [self.view addSubview:self.mapView];
+    
+    // Setup constraints
+    self.mapView.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [self.mapView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [self.mapView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [self.mapView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [self.mapView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+    ]];
+    
+    // Load your site
+    [self.mapView renderSiteWithClientId:@"your_client_id"
+                            clientSecret:@"your_client_secret"
+                                  siteId:@"your_site_id"];
+}
+
+#pragma mark - BCMapViewDelegate
+
+- (void)mapView:(BCMapView *)mapView didRenderSite:(BCSite *)site {
+    NSLog(@"✅ Site loaded: %@", site.siteName ?: @"Unknown");
+}
+
+- (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
+    NSLog(@"❌ Error: %@", payload);
+}
+
+- (void)mapView:(BCMapView *)mapView didLoadData:(BOOL)success {
+    if (success) {
+        NSArray<BCLocation *> *locations = [mapView getLocations];
+        NSArray<BCCategory *> *categories = [mapView getCategories];
+        NSLog(@"Loaded %lu locations, %lu categories", 
+              (unsigned long)locations.count, (unsigned long)categories.count);
+    }
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Architecture
+
+The iOS SDK provides a hybrid architecture that combines:
+
+- **Native iOS Performance**: Swift-based framework with native UI integration
+- **Web-based Mapping**: Advanced mapping capabilities using WebKit
+- **High-Performance Caching**: O(1) lookup with thread-safe concurrent access
+- **Event-Driven Communication**: Asynchronous bridge between JavaScript and native layers
+- **Type-Safe Models**: Comprehensive Swift models with JSON parsing
+
+## Core Components
+
+### BCMapView
+The main view class that displays indoor maps and handles user interactions.
+
+### BCMapViewDelegate
+Protocol for receiving map events, data loading, and user interactions.
+
+### Data Models
+- **BCSite**: Venue information with buildings and floors
+- **BCLocation**: Points of interest within the venue
+- **BCMapFloor**: Floor information and metadata
+- **BCRouteSegment**: Navigation route segments
+- **BCCategory**: Location categories for filtering
+
+### Cache System
+High-performance caching system that provides:
+- **Synchronous data access** after initial loading
+- **Thread-safe operations** with concurrent queue
+- **O(1) lookup performance** for all cached data
+- **Automatic cache population** after site loading
+
+## Data Access Methods
+
+After the `didLoadData` callback, you can access venue data synchronously:
+
+- `getLocations()` - All locations in the venue
+- `getCategories()` - All location categories
+- `getAmenityLocations()` - All amenity locations
+- `getAmenityTypes()` - Available amenity types
+- `getHappenings(type:)` - Events, offers, and news
+
+## Next Steps
+
+- [Getting Started](./getting-started) - Detailed setup guide
+- [Using Callbacks](./using_callbacks) - Understanding delegate methods
+- [Accessing Venue Data](./accessing-venue-data) - Working with cached data
+- [Locations](./locations) - Managing points of interest
+- [Wayfinding](./wayfinding) - Route planning and navigation
+- [API Reference](../../documentation/ios-api-reference/index.html) - Complete API documentation
+
+## Support
+
+- **Repository**: [https://github.com/sayone-tech/becomap-ios-sdk](https://github.com/sayone-tech/becomap-ios-sdk)
+- **API Reference**: [Complete API Documentation](../../documentation/ios-api-reference/index.html)
+- **Email**: [hello@becomap.com](mailto:hello@becomap.com)
+- **Documentation**: Complete guides and API reference

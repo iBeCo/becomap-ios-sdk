@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="BENavSearchCell" rowHeight="46" id="KGk-i7-Jjw" customClass="BENavSearchCell" customModule="beCoDevelop" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="48"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="48"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hnf-bL-z1z">
+                        <rect key="frame" x="0.0" y="4" width="276" height="40"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="A" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i0L-7h-eqU">
+                                <rect key="frame" x="15" y="13" width="14" height="14"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="8"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="borderWidth">
+                                        <real key="value" value="2"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
+                                        <color key="value" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="borderRadius">
+                                        <real key="value" value="7"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_be_current_loc" translatesAutoresizingMaskIntoConstraints="NO" id="Ofx-dN-pZL">
+                                <rect key="frame" x="15" y="13" width="14" height="14"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="14" id="FIr-rC-kh5"/>
+                                    <constraint firstAttribute="height" constant="14" id="t1A-AX-zvh"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Point name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vto-03-jOV">
+                                <rect key="frame" x="38" y="12" width="230" height="16"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="13"/>
+                                <color key="textColor" name="BECoolGray"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="Ofx-dN-pZL" firstAttribute="centerY" secondItem="hnf-bL-z1z" secondAttribute="centerY" id="1th-TA-JqC"/>
+                            <constraint firstAttribute="trailing" secondItem="Vto-03-jOV" secondAttribute="trailing" constant="8" id="7zJ-a7-ekL"/>
+                            <constraint firstItem="i0L-7h-eqU" firstAttribute="bottom" secondItem="Ofx-dN-pZL" secondAttribute="bottom" id="BQr-ad-Vx0"/>
+                            <constraint firstItem="Vto-03-jOV" firstAttribute="centerY" secondItem="hnf-bL-z1z" secondAttribute="centerY" id="DNo-Gd-791"/>
+                            <constraint firstItem="i0L-7h-eqU" firstAttribute="top" secondItem="Ofx-dN-pZL" secondAttribute="top" id="FpU-R7-5ra"/>
+                            <constraint firstItem="Ofx-dN-pZL" firstAttribute="leading" secondItem="hnf-bL-z1z" secondAttribute="leading" constant="15" id="NyC-KD-BBs"/>
+                            <constraint firstAttribute="height" constant="40" id="Psv-5N-l4Q"/>
+                            <constraint firstItem="i0L-7h-eqU" firstAttribute="trailing" secondItem="Ofx-dN-pZL" secondAttribute="trailing" id="Rtd-XA-lhR"/>
+                            <constraint firstItem="Vto-03-jOV" firstAttribute="leading" secondItem="hnf-bL-z1z" secondAttribute="leading" constant="38" id="qbS-2c-cNa"/>
+                            <constraint firstItem="i0L-7h-eqU" firstAttribute="leading" secondItem="Ofx-dN-pZL" secondAttribute="leading" id="vg7-N8-NkP"/>
+                        </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
+                                <color key="value" name="BELightGray"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="number" keyPath="borderWidth">
+                                <real key="value" value="1"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="number" keyPath="borderRadius">
+                                <real key="value" value="20"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vTb-u0-irP">
+                        <rect key="frame" x="276" y="4" width="44" height="40"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="44" id="oav-n6-kaU"/>
+                        </constraints>
+                        <state key="normal" image="ico_be_close_icon"/>
+                        <connections>
+                            <action selector="rightButtonTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="7SJ-J3-GOt"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="hnf-bL-z1z" secondAttribute="trailing" constant="44" id="E3J-dH-gMV"/>
+                    <constraint firstItem="hnf-bL-z1z" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="4" id="HY5-PK-7sT"/>
+                    <constraint firstItem="vTb-u0-irP" firstAttribute="top" secondItem="hnf-bL-z1z" secondAttribute="top" id="YRs-yn-sKa"/>
+                    <constraint firstItem="vTb-u0-irP" firstAttribute="bottom" secondItem="hnf-bL-z1z" secondAttribute="bottom" id="dXX-NB-hdO"/>
+                    <constraint firstItem="hnf-bL-z1z" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="fN9-7s-iFb"/>
+                    <constraint firstAttribute="bottom" secondItem="hnf-bL-z1z" secondAttribute="bottom" constant="4" id="fbT-pM-ec7"/>
+                    <constraint firstAttribute="trailing" secondItem="vTb-u0-irP" secondAttribute="trailing" id="jXe-W5-j3K"/>
+                    <constraint firstItem="vTb-u0-irP" firstAttribute="leading" secondItem="hnf-bL-z1z" secondAttribute="trailing" id="yWB-LS-Sss"/>
+                </constraints>
+                <userDefinedRuntimeAttributes>
+                    <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
+                        <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </userDefinedRuntimeAttribute>
+                </userDefinedRuntimeAttributes>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="currentLocImage" destination="Ofx-dN-pZL" id="CgI-Or-MdF"/>
+                <outlet property="pointIndexLabel" destination="i0L-7h-eqU" id="hRV-97-B8U"/>
+                <outlet property="pointNameLabel" destination="Vto-03-jOV" id="Wyq-h6-ovh"/>
+                <outlet property="rightButton" destination="vTb-u0-irP" id="53o-fR-cPl"/>
+            </connections>
+            <point key="canvasLocation" x="131.8840579710145" y="154.6875"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="ico_be_close_icon" width="18.5" height="19"/>
+        <image name="ico_be_current_loc" width="22" height="22"/>
+        <namedColor name="BECoolGray">
+            <color red="0.55699998140335083" green="0.56099998950958252" blue="0.56099998950958252" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="BELightGray">
+            <color red="0.76899999380111694" green="0.76899999380111694" blue="0.76899999380111694" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

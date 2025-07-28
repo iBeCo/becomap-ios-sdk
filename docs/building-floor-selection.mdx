@@ -1,0 +1,843 @@
+---
+sidebar_position: 5
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Building Floor Selection
+
+Floor selection is a fundamental feature for indoor navigation, allowing users to switch between different levels of a building. This guide explains how to implement floor switching functionality and handle floor-related events.
+
+## Overview
+
+The floor selection system provides:
+
+- **Floor Switching**: Programmatic and user-initiated floor changes
+- **Floor Information**: Access to floor metadata and properties
+- **Floor Events**: Delegate callbacks for floor change notifications
+- **Floor Validation**: Ensuring floor data integrity
+- **UI Integration**: Building custom floor selector components
+
+## Core Components
+
+### BCMapFloor
+
+Represents a floor within a building with comprehensive metadata:
+
+**Properties:**
+- `id` - Unique identifier for the floor
+- `name` - Display name (e.g., "Ground Floor", "Level 2")
+- `shortName` - Abbreviated name (e.g., "GF", "L2")
+- `elevation` - Floor elevation in meters
+- `viewPort` - Default viewport settings for the floor
+
+### Floor Selection Methods
+
+- `selectFloor(floor:)` - Switch to a specific floor
+- `getCurrentFloor()` - Get information about the current floor
+- `showRouteOnFloor(floorId:)` - Display route on specific floor
+
+## Basic Floor Selection
+
+### Switching Floors Programmatically
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class FloorSelectorViewController: UIViewController {
+    var mapView: BCMapView!
+    var availableFloors: [BCMapFloor] = []
+    var currentFloor: BCMapFloor?
+    
+    func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+        // Extract all floors from all buildings
+        availableFloors.removeAll()
+        
+        for building in site.buildings {
+            if let floors = building.floors {
+                availableFloors.append(contentsOf: floors)
+            }
+        }
+        
+        // Sort floors by elevation for logical ordering
+        availableFloors.sort { floor1, floor2 in
+            let elevation1 = floor1.elevation?.doubleValue ?? 0
+            let elevation2 = floor2.elevation?.doubleValue ?? 0
+            return elevation1 < elevation2
+        }
+        
+        print("Available floors: \(availableFloors.count)")
+        
+        // Setup floor selector UI
+        setupFloorSelector()
+        
+        // Select default floor (usually ground floor)
+        if let groundFloor = findGroundFloor() {
+            selectFloor(groundFloor)
+        }
+    }
+    
+    private func findGroundFloor() -> BCMapFloor? {
+        // Look for floor with elevation closest to 0
+        return availableFloors.min { floor1, floor2 in
+            let elevation1 = abs(floor1.elevation?.doubleValue ?? 0)
+            let elevation2 = abs(floor2.elevation?.doubleValue ?? 0)
+            return elevation1 < elevation2
+        }
+    }
+    
+    func selectFloor(_ floor: BCMapFloor) {
+        print("Switching to floor: \(floor.name ?? "Unknown")")
+        
+        // Switch floor on map
+        mapView.selectFloor(floor: floor)
+        
+        // Update current floor reference
+        currentFloor = floor
+        
+        // Update UI
+        updateFloorSelectorUI(selectedFloor: floor)
+    }
+}
+
+extension FloorSelectorViewController: BCMapViewDelegate {
+    func mapView(_ mapView: BCMapView, didSwitchFloor floor: BCMapFloor) {
+        print("✅ Floor switched to: \(floor.name ?? "Unknown")")
+        
+        // Update current floor reference
+        currentFloor = floor
+        
+        // Update UI to reflect floor change
+        updateFloorSelectorUI(selectedFloor: floor)
+        
+        // Optionally update location list for new floor
+        updateLocationListForFloor(floor)
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface FloorSelectorViewController : UIViewController <BCMapViewDelegate>
+@property (nonatomic, strong) BCMapView *mapView;
+@property (nonatomic, strong) NSArray<BCMapFloor *> *availableFloors;
+@property (nonatomic, strong) BCMapFloor *currentFloor;
+@end
+
+@implementation FloorSelectorViewController
+
+- (void)mapView:(BCMapView *)mapView didRenderSite:(BCSite *)site {
+    // Extract all floors from all buildings
+    NSMutableArray *floors = [NSMutableArray array];
+    
+    for (BCBuilding *building in site.buildings) {
+        if (building.floors) {
+            [floors addObjectsFromArray:building.floors];
+        }
+    }
+    
+    // Sort floors by elevation for logical ordering
+    self.availableFloors = [floors sortedArrayUsingComparator:^NSComparisonResult(BCMapFloor *floor1, BCMapFloor *floor2) {
+        double elevation1 = floor1.elevation ? floor1.elevation.doubleValue : 0;
+        double elevation2 = floor2.elevation ? floor2.elevation.doubleValue : 0;
+        
+        if (elevation1 < elevation2) return NSOrderedAscending;
+        if (elevation1 > elevation2) return NSOrderedDescending;
+        return NSOrderedSame;
+    }];
+    
+    NSLog(@"Available floors: %lu", (unsigned long)self.availableFloors.count);
+    
+    // Setup floor selector UI
+    [self setupFloorSelector];
+    
+    // Select default floor (usually ground floor)
+    BCMapFloor *groundFloor = [self findGroundFloor];
+    if (groundFloor) {
+        [self selectFloor:groundFloor];
+    }
+}
+
+- (BCMapFloor *)findGroundFloor {
+    // Look for floor with elevation closest to 0
+    BCMapFloor *groundFloor = nil;
+    double minElevationDiff = INFINITY;
+    
+    for (BCMapFloor *floor in self.availableFloors) {
+        double elevation = floor.elevation ? floor.elevation.doubleValue : 0;
+        double elevationDiff = fabs(elevation);
+        
+        if (elevationDiff < minElevationDiff) {
+            minElevationDiff = elevationDiff;
+            groundFloor = floor;
+        }
+    }
+    
+    return groundFloor;
+}
+
+- (void)selectFloor:(BCMapFloor *)floor {
+    NSLog(@"Switching to floor: %@", floor.name ?: @"Unknown");
+    
+    // Switch floor on map
+    [self.mapView selectFloor:floor];
+    
+    // Update current floor reference
+    self.currentFloor = floor;
+    
+    // Update UI
+    [self updateFloorSelectorUIWithSelectedFloor:floor];
+}
+
+- (void)mapView:(BCMapView *)mapView didSwitchFloor:(BCMapFloor *)floor {
+    NSLog(@"✅ Floor switched to: %@", floor.name ?: @"Unknown");
+    
+    // Update current floor reference
+    self.currentFloor = floor;
+    
+    // Update UI to reflect floor change
+    [self updateFloorSelectorUIWithSelectedFloor:floor];
+    
+    // Optionally update location list for new floor
+    [self updateLocationListForFloor:floor];
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Custom Floor Selector UI
+
+### Creating a Floor Picker
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class FloorPickerView: UIView {
+    private var stackView: UIStackView!
+    private var floorButtons: [UIButton] = []
+    private var floors: [BCMapFloor] = []
+    private var selectedFloor: BCMapFloor?
+    
+    weak var delegate: FloorPickerDelegate?
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
+        backgroundColor = UIColor.systemBackground
+        layer.cornerRadius = 12
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        layer.shadowRadius = 4
+        layer.shadowOpacity = 0.1
+        
+        stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            stackView.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
+        ])
+    }
+    
+    func configure(with floors: [BCMapFloor]) {
+        self.floors = floors
+        
+        // Clear existing buttons
+        floorButtons.forEach { $0.removeFromSuperview() }
+        floorButtons.removeAll()
+        
+        // Create buttons for each floor
+        for floor in floors.reversed() { // Show highest floors first
+            let button = createFloorButton(for: floor)
+            stackView.addArrangedSubview(button)
+            floorButtons.append(button)
+        }
+    }
+    
+    private func createFloorButton(for floor: BCMapFloor) -> UIButton {
+        let button = UIButton(type: .system)
+        button.setTitle(floor.shortName ?? floor.name ?? "Floor", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        button.backgroundColor = UIColor.systemGray6
+        button.layer.cornerRadius = 8
+        button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        
+        button.addTarget(self, action: #selector(floorButtonTapped(_:)), for: .touchUpInside)
+        button.tag = floors.firstIndex(of: floor) ?? 0
+        
+        return button
+    }
+    
+    @objc private func floorButtonTapped(_ sender: UIButton) {
+        let floor = floors[sender.tag]
+        selectFloor(floor)
+        delegate?.floorPicker(self, didSelectFloor: floor)
+    }
+    
+    func selectFloor(_ floor: BCMapFloor) {
+        selectedFloor = floor
+        
+        // Update button appearances
+        for (index, button) in floorButtons.enumerated() {
+            let isSelected = floors[index].id == floor.id
+            button.backgroundColor = isSelected ? UIColor.systemBlue : UIColor.systemGray6
+            button.setTitleColor(isSelected ? UIColor.white : UIColor.label, for: .normal)
+        }
+    }
+}
+
+protocol FloorPickerDelegate: AnyObject {
+    func floorPicker(_ picker: FloorPickerView, didSelectFloor floor: BCMapFloor)
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@protocol FloorPickerDelegate <NSObject>
+- (void)floorPicker:(FloorPickerView *)picker didSelectFloor:(BCMapFloor *)floor;
+@end
+
+@interface FloorPickerView : UIView
+@property (nonatomic, weak) id<FloorPickerDelegate> delegate;
+- (void)configureWithFloors:(NSArray<BCMapFloor *> *)floors;
+- (void)selectFloor:(BCMapFloor *)floor;
+@end
+
+@implementation FloorPickerView {
+    UIStackView *_stackView;
+    NSMutableArray<UIButton *> *_floorButtons;
+    NSArray<BCMapFloor *> *_floors;
+    BCMapFloor *_selectedFloor;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setupUI];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setupUI];
+    }
+    return self;
+}
+
+- (void)setupUI {
+    self.backgroundColor = [UIColor systemBackgroundColor];
+    self.layer.cornerRadius = 12;
+    self.layer.shadowColor = [UIColor blackColor].CGColor;
+    self.layer.shadowOffset = CGSizeMake(0, 2);
+    self.layer.shadowRadius = 4;
+    self.layer.shadowOpacity = 0.1;
+    
+    _stackView = [[UIStackView alloc] init];
+    _stackView.axis = UILayoutConstraintAxisVertical;
+    _stackView.spacing = 8;
+    _stackView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:_stackView];
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [_stackView.topAnchor constraintEqualToAnchor:self.topAnchor constant:12],
+        [_stackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
+        [_stackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
+        [_stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-12]
+    ]];
+    
+    _floorButtons = [NSMutableArray array];
+}
+
+- (void)configureWithFloors:(NSArray<BCMapFloor *> *)floors {
+    _floors = floors;
+    
+    // Clear existing buttons
+    for (UIButton *button in _floorButtons) {
+        [button removeFromSuperview];
+    }
+    [_floorButtons removeAllObjects];
+    
+    // Create buttons for each floor (reversed to show highest floors first)
+    NSArray *reversedFloors = [[floors reverseObjectEnumerator] allObjects];
+    for (BCMapFloor *floor in reversedFloors) {
+        UIButton *button = [self createFloorButtonForFloor:floor];
+        [_stackView addArrangedSubview:button];
+        [_floorButtons addObject:button];
+    }
+}
+
+- (UIButton *)createFloorButtonForFloor:(BCMapFloor *)floor {
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+    [button setTitle:(floor.shortName ?: floor.name ?: @"Floor") forState:UIControlStateNormal];
+    button.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
+    button.backgroundColor = [UIColor systemGray6Color];
+    button.layer.cornerRadius = 8;
+    button.contentEdgeInsets = UIEdgeInsetsMake(12, 16, 12, 16);
+    
+    [button addTarget:self action:@selector(floorButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    button.tag = [_floors indexOfObject:floor];
+    
+    return button;
+}
+
+- (void)floorButtonTapped:(UIButton *)sender {
+    BCMapFloor *floor = _floors[sender.tag];
+    [self selectFloor:floor];
+    [self.delegate floorPicker:self didSelectFloor:floor];
+}
+
+- (void)selectFloor:(BCMapFloor *)floor {
+    _selectedFloor = floor;
+    
+    // Update button appearances
+    for (NSInteger i = 0; i < _floorButtons.count; i++) {
+        UIButton *button = _floorButtons[i];
+        BCMapFloor *buttonFloor = _floors[i];
+        BOOL isSelected = [buttonFloor.id isEqualToString:floor.id];
+        
+        button.backgroundColor = isSelected ? [UIColor systemBlueColor] : [UIColor systemGray6Color];
+        [button setTitleColor:(isSelected ? [UIColor whiteColor] : [UIColor labelColor]) forState:UIControlStateNormal];
+    }
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Floor Information Display
+
+### Showing Floor Details
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class FloorInfoView: UIView {
+    private var nameLabel: UILabel!
+    private var elevationLabel: UILabel!
+    private var shortNameLabel: UILabel!
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
+        backgroundColor = UIColor.systemBackground.withAlphaComponent(0.9)
+        layer.cornerRadius = 8
+        
+        nameLabel = UILabel()
+        nameLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        nameLabel.textColor = UIColor.label
+        
+        elevationLabel = UILabel()
+        elevationLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        elevationLabel.textColor = UIColor.secondaryLabel
+        
+        shortNameLabel = UILabel()
+        shortNameLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+        shortNameLabel.textColor = UIColor.systemBlue
+        shortNameLabel.textAlignment = .center
+        
+        let stackView = UIStackView(arrangedSubviews: [shortNameLabel, nameLabel, elevationLabel])
+        stackView.axis = .vertical
+        stackView.spacing = 4
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            stackView.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
+        ])
+    }
+    
+    func configure(with floor: BCMapFloor) {
+        nameLabel.text = floor.name ?? "Unknown Floor"
+        shortNameLabel.text = floor.shortName ?? floor.name ?? "?"
+        
+        if let elevation = floor.elevation {
+            elevationLabel.text = "Elevation: \(elevation) m"
+            elevationLabel.isHidden = false
+        } else {
+            elevationLabel.isHidden = true
+        }
+    }
+}
+
+// Usage in view controller
+func updateFloorInfo(_ floor: BCMapFloor) {
+    floorInfoView.configure(with: floor)
+    
+    // Animate the info view appearance
+    UIView.animate(withDuration: 0.3) {
+        self.floorInfoView.alpha = 1.0
+    }
+    
+    // Auto-hide after 3 seconds
+    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+        UIView.animate(withDuration: 0.3) {
+            self.floorInfoView.alpha = 0.0
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface FloorInfoView : UIView
+- (void)configureWithFloor:(BCMapFloor *)floor;
+@end
+
+@implementation FloorInfoView {
+    UILabel *_nameLabel;
+    UILabel *_elevationLabel;
+    UILabel *_shortNameLabel;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setupUI];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setupUI];
+    }
+    return self;
+}
+
+- (void)setupUI {
+    self.backgroundColor = [[UIColor systemBackgroundColor] colorWithAlphaComponent:0.9];
+    self.layer.cornerRadius = 8;
+    
+    _nameLabel = [[UILabel alloc] init];
+    _nameLabel.font = [UIFont systemFontOfSize:18 weight:UIFontWeightSemibold];
+    _nameLabel.textColor = [UIColor labelColor];
+    
+    _elevationLabel = [[UILabel alloc] init];
+    _elevationLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightRegular];
+    _elevationLabel.textColor = [UIColor secondaryLabelColor];
+    
+    _shortNameLabel = [[UILabel alloc] init];
+    _shortNameLabel.font = [UIFont systemFontOfSize:24 weight:UIFontWeightBold];
+    _shortNameLabel.textColor = [UIColor systemBlueColor];
+    _shortNameLabel.textAlignment = NSTextAlignmentCenter;
+    
+    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[_shortNameLabel, _nameLabel, _elevationLabel]];
+    stackView.axis = UILayoutConstraintAxisVertical;
+    stackView.spacing = 4;
+    stackView.alignment = UIStackViewAlignmentCenter;
+    stackView.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [self addSubview:stackView];
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [stackView.topAnchor constraintEqualToAnchor:self.topAnchor constant:12],
+        [stackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
+        [stackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
+        [stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-12]
+    ]];
+}
+
+- (void)configureWithFloor:(BCMapFloor *)floor {
+    _nameLabel.text = floor.name ?: @"Unknown Floor";
+    _shortNameLabel.text = floor.shortName ?: floor.name ?: @"?";
+    
+    if (floor.elevation) {
+        _elevationLabel.text = [NSString stringWithFormat:@"Elevation: %@ m", floor.elevation];
+        _elevationLabel.hidden = NO;
+    } else {
+        _elevationLabel.hidden = YES;
+    }
+}
+
+@end
+
+// Usage in view controller
+- (void)updateFloorInfo:(BCMapFloor *)floor {
+    [self.floorInfoView configureWithFloor:floor];
+    
+    // Animate the info view appearance
+    [UIView animateWithDuration:0.3 animations:^{
+        self.floorInfoView.alpha = 1.0;
+    }];
+    
+    // Auto-hide after 3 seconds
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [UIView animateWithDuration:0.3 animations:^{
+            self.floorInfoView.alpha = 0.0;
+        }];
+    });
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Floor Validation and Error Handling
+
+### Validating Floor Data
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func validateFloor(_ floor: BCMapFloor) -> Bool {
+    // Check essential properties
+    guard let floorId = floor.id, !floorId.isEmpty else {
+        print("❌ Floor missing ID")
+        return false
+    }
+    
+    guard let floorName = floor.name, !floorName.isEmpty else {
+        print("❌ Floor missing name")
+        return false
+    }
+    
+    print("✅ Floor validation passed: \(floorName)")
+    return true
+}
+
+func validateAndFilterFloors(_ floors: [BCMapFloor]) -> [BCMapFloor] {
+    return floors.filter { validateFloor($0) }
+}
+
+// Safe floor selection with validation
+func safeSelectFloor(_ floor: BCMapFloor) {
+    guard validateFloor(floor) else {
+        print("❌ Cannot select invalid floor")
+        showErrorAlert("Invalid floor data")
+        return
+    }
+    
+    // Check if floor exists in available floors
+    guard availableFloors.contains(where: { $0.id == floor.id }) else {
+        print("❌ Floor not found in available floors")
+        showErrorAlert("Floor not available")
+        return
+    }
+    
+    // Proceed with floor selection
+    selectFloor(floor)
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (BOOL)validateFloor:(BCMapFloor *)floor {
+    // Check essential properties
+    if (!floor.id || floor.id.length == 0) {
+        NSLog(@"❌ Floor missing ID");
+        return NO;
+    }
+    
+    if (!floor.name || floor.name.length == 0) {
+        NSLog(@"❌ Floor missing name");
+        return NO;
+    }
+    
+    NSLog(@"✅ Floor validation passed: %@", floor.name);
+    return YES;
+}
+
+- (NSArray<BCMapFloor *> *)validateAndFilterFloors:(NSArray<BCMapFloor *> *)floors {
+    NSMutableArray *validFloors = [NSMutableArray array];
+    for (BCMapFloor *floor in floors) {
+        if ([self validateFloor:floor]) {
+            [validFloors addObject:floor];
+        }
+    }
+    return [validFloors copy];
+}
+
+// Safe floor selection with validation
+- (void)safeSelectFloor:(BCMapFloor *)floor {
+    if (![self validateFloor:floor]) {
+        NSLog(@"❌ Cannot select invalid floor");
+        [self showErrorAlert:@"Invalid floor data"];
+        return;
+    }
+    
+    // Check if floor exists in available floors
+    BOOL floorExists = NO;
+    for (BCMapFloor *availableFloor in self.availableFloors) {
+        if ([availableFloor.id isEqualToString:floor.id]) {
+            floorExists = YES;
+            break;
+        }
+    }
+    
+    if (!floorExists) {
+        NSLog(@"❌ Floor not found in available floors");
+        [self showErrorAlert:@"Floor not available"];
+        return;
+    }
+    
+    // Proceed with floor selection
+    [self selectFloor:floor];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+### Performance Optimization
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class FloorManager {
+    private var floorCache: [String: BCMapFloor] = [:]
+    private var currentFloorId: String?
+    
+    func cacheFloors(_ floors: [BCMapFloor]) {
+        floorCache.removeAll()
+        for floor in floors {
+            if let floorId = floor.id {
+                floorCache[floorId] = floor
+            }
+        }
+    }
+    
+    func getFloor(by id: String) -> BCMapFloor? {
+        return floorCache[id]
+    }
+    
+    func setCurrentFloor(_ floorId: String) {
+        currentFloorId = floorId
+    }
+    
+    func getCurrentFloor() -> BCMapFloor? {
+        guard let currentId = currentFloorId else { return nil }
+        return floorCache[currentId]
+    }
+    
+    func getFloorsOrderedByElevation() -> [BCMapFloor] {
+        return Array(floorCache.values).sorted { floor1, floor2 in
+            let elevation1 = floor1.elevation?.doubleValue ?? 0
+            let elevation2 = floor2.elevation?.doubleValue ?? 0
+            return elevation1 < elevation2
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface FloorManager : NSObject
+- (void)cacheFloors:(NSArray<BCMapFloor *> *)floors;
+- (BCMapFloor *)getFloorById:(NSString *)floorId;
+- (void)setCurrentFloor:(NSString *)floorId;
+- (BCMapFloor *)getCurrentFloor;
+- (NSArray<BCMapFloor *> *)getFloorsOrderedByElevation;
+@end
+
+@implementation FloorManager {
+    NSMutableDictionary<NSString *, BCMapFloor *> *_floorCache;
+    NSString *_currentFloorId;
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _floorCache = [NSMutableDictionary dictionary];
+    }
+    return self;
+}
+
+- (void)cacheFloors:(NSArray<BCMapFloor *> *)floors {
+    [_floorCache removeAllObjects];
+    for (BCMapFloor *floor in floors) {
+        if (floor.id) {
+            _floorCache[floor.id] = floor;
+        }
+    }
+}
+
+- (BCMapFloor *)getFloorById:(NSString *)floorId {
+    return _floorCache[floorId];
+}
+
+- (void)setCurrentFloor:(NSString *)floorId {
+    _currentFloorId = floorId;
+}
+
+- (BCMapFloor *)getCurrentFloor {
+    if (!_currentFloorId) return nil;
+    return _floorCache[_currentFloorId];
+}
+
+- (NSArray<BCMapFloor *> *)getFloorsOrderedByElevation {
+    NSArray *floors = [_floorCache.allValues sortedArrayUsingComparator:^NSComparisonResult(BCMapFloor *floor1, BCMapFloor *floor2) {
+        double elevation1 = floor1.elevation ? floor1.elevation.doubleValue : 0;
+        double elevation2 = floor2.elevation ? floor2.elevation.doubleValue : 0;
+        
+        if (elevation1 < elevation2) return NSOrderedAscending;
+        if (elevation1 > elevation2) return NSOrderedDescending;
+        return NSOrderedSame;
+    }];
+    
+    return floors;
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Related Topics
+
+- [Sites](./sites) - Understanding the building and floor hierarchy
+- [Locations](./locations) - Working with floor-specific locations
+- [Wayfinding](./wayfinding) - Floor transitions in navigation routes
+- [Interactivity](./interactivity) - Handling floor selection user interactions

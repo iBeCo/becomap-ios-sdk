@@ -1,0 +1,157 @@
+---
+sidebar_position: 11
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Release Notes
+
+This page contains the release notes for the Beco iOS SDK, including new features, improvements, bug fixes, and breaking changes for each version.
+
+## Version 1.0.0 - Initial Release
+*Released: January 24, 2025*
+
+### 🎉 Initial Release Features
+
+The Beco iOS SDK 1.0.0 marks the first stable release of our comprehensive indoor mapping solution for iOS applications.
+
+#### Core Features
+- **🗺️ Indoor Mapping**: Multi-floor building maps with interactive navigation
+- **📍 Location Services**: Search, selection, and management of points of interest
+- **🧭 Route Planning**: Multi-floor navigation with waypoint support
+- **🏢 Floor Switching**: Seamless navigation between building floors
+- **⚡ High-Performance Caching**: O(1) lookup with thread-safe concurrent access
+- **♿ Accessibility**: Support for accessible route planning
+
+#### Technical Highlights
+- **Hybrid Architecture**: Native iOS performance with web-based mapping
+- **XCFramework Support**: Multi-platform deployment (iOS, iOS Simulator, Mac Catalyst)
+- **JavaScript Obfuscation**: IP protection for embedded web assets
+- **Swift 5.0+ Support**: Modern Swift language features
+- **iOS 13.0+ Compatibility**: Wide device support
+
+#### SDK Components
+- **BCMapView**: Main map display component
+- **BCMapViewDelegate**: Comprehensive callback system
+- **Data Models**: Type-safe Swift models (BCSite, BCLocation, BCMapFloor, etc.)
+- **Route Planning**: BCRouteSegment, BCRouteStep, BCRouteOptions
+- **Error Handling**: Structured error reporting and recovery
+
+#### Sample Application
+- Complete reference implementation
+- Navigation assist views and UI components
+- Example implementations of delegate patterns
+- Best practices demonstration
+
+#### Documentation
+- Comprehensive API reference
+- Step-by-step integration guides
+- Code examples in Swift and Objective-C
+- Error handling strategies
+- Performance optimization tips
+
+### 🔧 Technical Specifications
+
+**Requirements:**
+- iOS 13.0 or later
+- Xcode 12.0 or later
+- Swift 5.0 or later
+
+**Supported Platforms:**
+- iOS devices
+- iOS Simulator
+- Mac Catalyst
+
+**Framework Size:**
+- Optimized for minimal app size impact
+- JavaScript assets with optional obfuscation
+
+### 📦 Installation Methods
+
+**XCFramework (Recommended):**
+- Pre-built binary distribution
+- Drag-and-drop integration
+- Automatic dependency resolution
+
+**Manual Integration:**
+- Source code integration
+- Custom build configurations
+- Development and debugging support
+
+### 🚀 Getting Started
+
+```swift
+import becomap_ios
+
+class MapViewController: UIViewController {
+    var mapView: BCMapView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        mapView = BCMapView()
+        mapView.delegate = self
+        view.addSubview(mapView)
+        
+        mapView.renderSiteWith(
+            clientId: "your_client_id",
+            clientSecret: "your_client_secret", 
+            siteId: "your_site_id"
+        )
+    }
+}
+
+extension MapViewController: BCMapViewDelegate {
+    func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+        print("✅ Site loaded: \(site.siteName ?? "Unknown")")
+    }
+    
+    func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+        print("❌ Error: \(payload)")
+    }
+}
+```
+
+### 🐛 Known Issues
+
+None reported for initial release.
+
+### 📞 Support
+
+For technical support and questions:
+- Email: [hello@becomap.com](mailto:hello@becomap.com)
+- Documentation: Complete guides and API reference
+- Sample Code: Reference implementation included
+
+---
+
+## Upcoming Features
+
+### Version 1.1.0 (Planned)
+- Enhanced accessibility features
+- Performance optimizations
+- Additional delegate callbacks
+- Expanded error handling
+
+### Future Roadmap
+- SwiftUI support
+- Offline mapping capabilities
+- Advanced analytics integration
+- Custom map styling options
+
+---
+
+## Migration Guide
+
+### From Beta to 1.0.0
+This is the initial stable release. No migration required.
+
+### Breaking Changes
+None for initial release.
+
+---
+
+## License
+
+The Beco iOS SDK is available under a commercial license. Contact us for licensing information and enterprise support options.

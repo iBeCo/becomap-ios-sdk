@@ -1,0 +1,136 @@
+---
+sidebar_position: 8
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Sites
+
+Sites represent venues in the Beco system - shopping malls, airports, hospitals, or corporate campuses. This guide explains how to work with BCSite objects and the venue hierarchy.
+
+## Overview
+
+A site is the entry point for indoor mapping operations. Sites contain metadata including address information, contact details, operating hours, and geographic coordinates.
+
+### Hierarchy Structure
+
+```
+BCSite (Top Level)
+├── Building 1
+│   ├── Floor 1 (Ground Floor)
+│   │   ├── Location 1 (Store A)
+│   │   ├── Location 2 (Restaurant B)
+│   │   └── Location 3 (Restroom)
+│   └── Floor 2 (First Floor)
+└── Building 2
+    └── Floor 1 (Ground Floor)
+```
+
+**Levels:**
+- **Site**: Top-level venue
+- **Buildings**: Physical structures within the site
+- **Floors**: Horizontal levels within each building
+- **Locations**: Points of interest on each floor
+
+## BCSite Properties
+
+**Core Information:**
+- `siteName` - Display name of the venue
+- `id` - Unique identifier for the site
+- `address` - Street address
+- `city` - City location
+- `buildings` - Array of BCBuilding objects
+
+**Geographic Data:**
+- `center` - Geographic center coordinates [longitude, latitude]
+- `tzId` - Timezone identifier
+
+**Operational Data:**
+- `operationHours` - Array of BCOperationHour objects
+
+## Working with Sites
+
+### Accessing Site Information
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+    print("Site Name: \(site.siteName ?? "Unknown")")
+    print("Buildings: \(site.buildings.count)")
+
+    // Access buildings and floors
+    for building in site.buildings {
+        print("Building: \(building.name ?? "Unknown")")
+        if let floors = building.floors {
+            for floor in floors {
+                print("  Floor: \(floor.name ?? "Unknown")")
+            }
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)mapView:(BCMapView *)mapView didRenderSite:(BCSite *)site {
+    NSLog(@"Site Name: %@", site.siteName ?: @"Unknown");
+    NSLog(@"Buildings: %lu", (unsigned long)site.buildings.count);
+
+    // Access buildings and floors
+    for (BCBuilding *building in site.buildings) {
+        NSLog(@"Building: %@", building.name ?: @"Unknown");
+        if (building.floors) {
+            for (BCMapFloor *floor in building.floors) {
+                NSLog(@"  Floor: %@", floor.name ?: @"Unknown");
+            }
+        }
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Finding Floors by ID
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+    // Find a specific floor by ID
+    if let targetFloor = site.getFloor(withId: "floor-id-123") {
+        print("Found floor: \(targetFloor.name ?? "Unknown")")
+        mapView.selectFloor(floor: targetFloor)
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)mapView:(BCMapView *)mapView didRenderSite:(BCSite *)site {
+    // Find a specific floor by ID
+    BCMapFloor *targetFloor = [site getFloorWithId:@"floor-id-123"];
+    if (targetFloor) {
+        NSLog(@"Found floor: %@", targetFloor.name ?: @"Unknown");
+        [mapView selectFloor:targetFloor];
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+- **Validate site data** before using it in your application
+- **Store site reference** for later use after successful loading
+- **Handle errors gracefully** with user-friendly messages
+- **Check for empty buildings/floors** before accessing floor data

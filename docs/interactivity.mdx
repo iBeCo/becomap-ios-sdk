@@ -1,0 +1,1166 @@
+---
+sidebar_position: 4
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Interactivity
+
+The Becomap iOS SDK provides rich interactive features that allow users to engage with indoor maps through touch gestures, location selection, and custom UI components. This guide explains how to implement and customize interactive behaviors.
+
+## Overview
+
+The SDK supports various interactive features:
+
+- **Touch Interactions**: Tap, pan, zoom, and rotate gestures
+- **Location Selection**: Programmatic and user-initiated location selection
+- **Camera Controls**: Focus, zoom, pitch, and bearing adjustments
+- **Custom UI Overlays**: Adding custom controls and information displays
+- **Multi-Selection**: Selecting multiple locations simultaneously
+
+## Basic Interactions
+
+### Location Selection Events
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+extension MapViewController: BCMapViewDelegate {
+    func mapView(_ mapView: BCMapView, didSelectLocation location: BCLocation) {
+        print("📍 Location selected: \(location.name ?? "Unknown")")
+        
+        // Store selected location
+        selectedLocation = location
+        
+        // Update UI to show location details
+        showLocationDetails(location)
+        
+        // Focus camera on selected location
+        mapView.focusTo(
+            location: location,
+            zoomLevel: 18.0,
+            bearing: nil,
+            pitch: nil
+        )
+        
+        // Enable route planning if we have a start location
+        if let startLocation = startLocation {
+            enableRouteButton(from: startLocation, to: location)
+        }
+    }
+    
+    private func showLocationDetails(_ location: BCLocation) {
+        // Create location detail view
+        let detailView = LocationDetailView()
+        detailView.configure(with: location)
+        
+        // Add to view hierarchy
+        view.addSubview(detailView)
+        detailView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            detailView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            detailView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            detailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
+        ])
+        
+        // Animate appearance
+        detailView.alpha = 0
+        UIView.animate(withDuration: 0.3) {
+            detailView.alpha = 1
+        }
+        
+        // Store reference for later removal
+        self.locationDetailView = detailView
+    }
+    
+    private func enableRouteButton(from start: BCLocation, to end: BCLocation) {
+        routeButton.isEnabled = true
+        routeButton.setTitle("Get Route", for: .normal)
+        
+        routeButton.removeTarget(nil, action: nil, for: .allEvents)
+        routeButton.addTarget(self, action: #selector(calculateRouteTapped), for: .touchUpInside)
+    }
+    
+    @objc private func calculateRouteTapped() {
+        guard let start = startLocation, let end = selectedLocation else { return }
+        
+        let routeOptions = BCRouteOptions()
+        routeOptions.getAccessiblePath = accessibilitySwitch.isOn
+        
+        mapView.getRoute(
+            start: start,
+            goal: end,
+            wayPoints: nil,
+            routeOptions: routeOptions
+        )
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)mapView:(BCMapView *)mapView didSelectLocation:(BCLocation *)location {
+    NSLog(@"📍 Location selected: %@", location.name ?: @"Unknown");
+    
+    // Store selected location
+    self.selectedLocation = location;
+    
+    // Update UI to show location details
+    [self showLocationDetails:location];
+    
+    // Focus camera on selected location
+    [mapView focusToWithLocation:location 
+                       zoomLevel:@18.0 
+                         bearing:nil 
+                           pitch:nil];
+    
+    // Enable route planning if we have a start location
+    if (self.startLocation) {
+        [self enableRouteButtonFrom:self.startLocation to:location];
+    }
+}
+
+- (void)showLocationDetails:(BCLocation *)location {
+    // Create location detail view
+    LocationDetailView *detailView = [[LocationDetailView alloc] init];
+    [detailView configureWithLocation:location];
+    
+    // Add to view hierarchy
+    [self.view addSubview:detailView];
+    detailView.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [detailView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:16],
+        [detailView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-16],
+        [detailView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-16]
+    ]];
+    
+    // Animate appearance
+    detailView.alpha = 0;
+    [UIView animateWithDuration:0.3 animations:^{
+        detailView.alpha = 1;
+    }];
+    
+    // Store reference for later removal
+    self.locationDetailView = detailView;
+}
+
+- (void)enableRouteButtonFrom:(BCLocation *)start to:(BCLocation *)end {
+    self.routeButton.enabled = YES;
+    [self.routeButton setTitle:@"Get Route" forState:UIControlStateNormal];
+    
+    [self.routeButton removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
+    [self.routeButton addTarget:self action:@selector(calculateRouteTapped) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)calculateRouteTapped {
+    if (!self.startLocation || !self.selectedLocation) return;
+    
+    BCRouteOptions *routeOptions = [[BCRouteOptions alloc] init];
+    routeOptions.getAccessiblePath = self.accessibilitySwitch.isOn;
+    
+    [self.mapView getRouteWithStart:self.startLocation 
+                               goal:self.selectedLocation 
+                          wayPoints:nil 
+                       routeOptions:routeOptions];
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Camera Control Interactions
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class CameraControlView: UIView {
+    weak var mapView: BCMapView?
+    
+    private var zoomInButton: UIButton!
+    private var zoomOutButton: UIButton!
+    private var resetButton: UIButton!
+    private var pitchSlider: UISlider!
+    private var bearingSlider: UISlider!
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
+        backgroundColor = UIColor.systemBackground.withAlphaComponent(0.9)
+        layer.cornerRadius = 12
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        layer.shadowRadius = 4
+        layer.shadowOpacity = 0.1
+        
+        // Zoom controls
+        zoomInButton = createButton(title: "+", action: #selector(zoomInTapped))
+        zoomOutButton = createButton(title: "−", action: #selector(zoomOutTapped))
+        resetButton = createButton(title: "Reset", action: #selector(resetTapped))
+        
+        // Pitch control
+        pitchSlider = UISlider()
+        pitchSlider.minimumValue = 0
+        pitchSlider.maximumValue = 60
+        pitchSlider.value = 0
+        pitchSlider.addTarget(self, action: #selector(pitchChanged(_:)), for: .valueChanged)
+        
+        // Bearing control
+        bearingSlider = UISlider()
+        bearingSlider.minimumValue = 0
+        bearingSlider.maximumValue = 360
+        bearingSlider.value = 0
+        bearingSlider.addTarget(self, action: #selector(bearingChanged(_:)), for: .valueChanged)
+        
+        // Layout
+        let zoomStack = UIStackView(arrangedSubviews: [zoomInButton, zoomOutButton, resetButton])
+        zoomStack.axis = .horizontal
+        zoomStack.spacing = 8
+        zoomStack.distribution = .fillEqually
+        
+        let pitchLabel = UILabel()
+        pitchLabel.text = "Pitch"
+        pitchLabel.font = UIFont.systemFont(ofSize: 12)
+        
+        let bearingLabel = UILabel()
+        bearingLabel.text = "Bearing"
+        bearingLabel.font = UIFont.systemFont(ofSize: 12)
+        
+        let mainStack = UIStackView(arrangedSubviews: [
+            zoomStack,
+            pitchLabel,
+            pitchSlider,
+            bearingLabel,
+            bearingSlider
+        ])
+        mainStack.axis = .vertical
+        mainStack.spacing = 8
+        mainStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        addSubview(mainStack)
+        
+        NSLayoutConstraint.activate([
+            mainStack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            mainStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
+        ])
+    }
+    
+    private func createButton(title: String, action: Selector) -> UIButton {
+        let button = UIButton(type: .system)
+        button.setTitle(title, for: .normal)
+        button.backgroundColor = UIColor.systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 8
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        button.addTarget(self, action: action, for: .touchUpInside)
+        return button
+    }
+    
+    @objc private func zoomInTapped() {
+        // Implement zoom in logic
+        mapView?.updateZoom(zoomLevel: getCurrentZoom() + 1)
+    }
+    
+    @objc private func zoomOutTapped() {
+        // Implement zoom out logic
+        mapView?.updateZoom(zoomLevel: getCurrentZoom() - 1)
+    }
+    
+    @objc private func resetTapped() {
+        pitchSlider.value = 0
+        bearingSlider.value = 0
+        
+        let resetOptions = BCMapViewOptions()
+        resetOptions.zoom = 16.0
+        resetOptions.pitch = 0
+        resetOptions.bearing = 0
+        
+        mapView?.resetDefaultViewport(newOptions: resetOptions)
+    }
+    
+    @objc private func pitchChanged(_ slider: UISlider) {
+        mapView?.updatePitch(pitch: Double(slider.value))
+    }
+    
+    @objc private func bearingChanged(_ slider: UISlider) {
+        mapView?.updateBearing(bearing: Double(slider.value))
+    }
+    
+    private func getCurrentZoom() -> Double {
+        // Return current zoom level (implement based on your needs)
+        return 16.0
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface CameraControlView : UIView
+@property (nonatomic, weak) BCMapView *mapView;
+@end
+
+@implementation CameraControlView {
+    UIButton *_zoomInButton;
+    UIButton *_zoomOutButton;
+    UIButton *_resetButton;
+    UISlider *_pitchSlider;
+    UISlider *_bearingSlider;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setupUI];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setupUI];
+    }
+    return self;
+}
+
+- (void)setupUI {
+    self.backgroundColor = [[UIColor systemBackgroundColor] colorWithAlphaComponent:0.9];
+    self.layer.cornerRadius = 12;
+    self.layer.shadowColor = [UIColor blackColor].CGColor;
+    self.layer.shadowOffset = CGSizeMake(0, 2);
+    self.layer.shadowRadius = 4;
+    self.layer.shadowOpacity = 0.1;
+    
+    // Zoom controls
+    _zoomInButton = [self createButtonWithTitle:@"+" action:@selector(zoomInTapped)];
+    _zoomOutButton = [self createButtonWithTitle:@"−" action:@selector(zoomOutTapped)];
+    _resetButton = [self createButtonWithTitle:@"Reset" action:@selector(resetTapped)];
+    
+    // Pitch control
+    _pitchSlider = [[UISlider alloc] init];
+    _pitchSlider.minimumValue = 0;
+    _pitchSlider.maximumValue = 60;
+    _pitchSlider.value = 0;
+    [_pitchSlider addTarget:self action:@selector(pitchChanged:) forControlEvents:UIControlEventValueChanged];
+    
+    // Bearing control
+    _bearingSlider = [[UISlider alloc] init];
+    _bearingSlider.minimumValue = 0;
+    _bearingSlider.maximumValue = 360;
+    _bearingSlider.value = 0;
+    [_bearingSlider addTarget:self action:@selector(bearingChanged:) forControlEvents:UIControlEventValueChanged];
+    
+    // Layout
+    UIStackView *zoomStack = [[UIStackView alloc] initWithArrangedSubviews:@[_zoomInButton, _zoomOutButton, _resetButton]];
+    zoomStack.axis = UILayoutConstraintAxisHorizontal;
+    zoomStack.spacing = 8;
+    zoomStack.distribution = UIStackViewDistributionFillEqually;
+    
+    UILabel *pitchLabel = [[UILabel alloc] init];
+    pitchLabel.text = @"Pitch";
+    pitchLabel.font = [UIFont systemFontOfSize:12];
+    
+    UILabel *bearingLabel = [[UILabel alloc] init];
+    bearingLabel.text = @"Bearing";
+    bearingLabel.font = [UIFont systemFontOfSize:12];
+    
+    UIStackView *mainStack = [[UIStackView alloc] initWithArrangedSubviews:@[
+        zoomStack, pitchLabel, _pitchSlider, bearingLabel, _bearingSlider
+    ]];
+    mainStack.axis = UILayoutConstraintAxisVertical;
+    mainStack.spacing = 8;
+    mainStack.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [self addSubview:mainStack];
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [mainStack.topAnchor constraintEqualToAnchor:self.topAnchor constant:12],
+        [mainStack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
+        [mainStack.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
+        [mainStack.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-12]
+    ]];
+}
+
+- (UIButton *)createButtonWithTitle:(NSString *)title action:(SEL)action {
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+    [button setTitle:title forState:UIControlStateNormal];
+    button.backgroundColor = [UIColor systemBlueColor];
+    [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    button.layer.cornerRadius = 8;
+    button.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
+    [button addTarget:self action:action forControlEvents:UIControlEventTouchUpInside];
+    return button;
+}
+
+- (void)zoomInTapped {
+    [self.mapView updateZoomWithZoomLevel:[self getCurrentZoom] + 1];
+}
+
+- (void)zoomOutTapped {
+    [self.mapView updateZoomWithZoomLevel:[self getCurrentZoom] - 1];
+}
+
+- (void)resetTapped {
+    _pitchSlider.value = 0;
+    _bearingSlider.value = 0;
+    
+    BCMapViewOptions *resetOptions = [[BCMapViewOptions alloc] init];
+    resetOptions.zoom = 16.0;
+    resetOptions.pitch = 0;
+    resetOptions.bearing = 0;
+    
+    [self.mapView resetDefaultViewportWithNewOptions:resetOptions];
+}
+
+- (void)pitchChanged:(UISlider *)slider {
+    [self.mapView updatePitchWithPitch:slider.value];
+}
+
+- (void)bearingChanged:(UISlider *)slider {
+    [self.mapView updateBearingWithBearing:slider.value];
+}
+
+- (double)getCurrentZoom {
+    // Return current zoom level (implement based on your needs)
+    return 16.0;
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Multi-Selection Support
+
+### Enabling Multi-Selection
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class MultiSelectionViewController: UIViewController {
+    var mapView: BCMapView!
+    var selectedLocations: [BCLocation] = []
+    var isMultiSelectionEnabled = false
+    
+    @IBOutlet weak var multiSelectButton: UIButton!
+    @IBOutlet weak var selectedCountLabel: UILabel!
+    @IBOutlet weak var clearSelectionButton: UIButton!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupMultiSelection()
+    }
+    
+    private func setupMultiSelection() {
+        updateMultiSelectionUI()
+        
+        multiSelectButton.addTarget(self, action: #selector(toggleMultiSelection), for: .touchUpInside)
+        clearSelectionButton.addTarget(self, action: #selector(clearAllSelections), for: .touchUpInside)
+    }
+    
+    @objc private func toggleMultiSelection() {
+        isMultiSelectionEnabled.toggle()
+        mapView.enableMultiSelection(enable: isMultiSelectionEnabled)
+        updateMultiSelectionUI()
+        
+        if !isMultiSelectionEnabled {
+            // Clear selections when disabling multi-select
+            selectedLocations.removeAll()
+            mapView.clearSelection()
+        }
+    }
+    
+    @objc private func clearAllSelections() {
+        selectedLocations.removeAll()
+        mapView.clearSelection()
+        updateMultiSelectionUI()
+    }
+    
+    private func updateMultiSelectionUI() {
+        let buttonTitle = isMultiSelectionEnabled ? "Disable Multi-Select" : "Enable Multi-Select"
+        multiSelectButton.setTitle(buttonTitle, for: .normal)
+        
+        selectedCountLabel.text = "Selected: \(selectedLocations.count)"
+        clearSelectionButton.isEnabled = !selectedLocations.isEmpty
+        
+        // Update button colors
+        multiSelectButton.backgroundColor = isMultiSelectionEnabled ? .systemRed : .systemBlue
+        clearSelectionButton.alpha = selectedLocations.isEmpty ? 0.5 : 1.0
+    }
+}
+
+extension MultiSelectionViewController: BCMapViewDelegate {
+    func mapView(_ mapView: BCMapView, didSelectLocation location: BCLocation) {
+        if isMultiSelectionEnabled {
+            // Add to selection if not already selected
+            if !selectedLocations.contains(where: { $0.id == location.id }) {
+                selectedLocations.append(location)
+                print("✅ Added to selection: \(location.name ?? "Unknown")")
+            } else {
+                // Remove from selection if already selected
+                selectedLocations.removeAll { $0.id == location.id }
+                print("❌ Removed from selection: \(location.name ?? "Unknown")")
+            }
+        } else {
+            // Single selection mode
+            selectedLocations = [location]
+            print("📍 Single selection: \(location.name ?? "Unknown")")
+        }
+        
+        updateMultiSelectionUI()
+        
+        // Show selection summary
+        showSelectionSummary()
+    }
+    
+    private func showSelectionSummary() {
+        guard !selectedLocations.isEmpty else { return }
+        
+        let locationNames = selectedLocations.compactMap { $0.name }.joined(separator: ", ")
+        let message = "Selected locations: \(locationNames)"
+        
+        let alert = UIAlertController(title: "Selection", message: message, preferredStyle: .alert)
+        
+        if selectedLocations.count >= 2 {
+            alert.addAction(UIAlertAction(title: "Plan Route", style: .default) { _ in
+                self.planRouteWithMultipleLocations()
+            })
+        }
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        
+        present(alert, animated: true)
+    }
+    
+    private func planRouteWithMultipleLocations() {
+        guard selectedLocations.count >= 2 else { return }
+        
+        let start = selectedLocations[0]
+        let goal = selectedLocations[selectedLocations.count - 1]
+        let waypoints = selectedLocations.count > 2 ? Array(selectedLocations[1..<selectedLocations.count - 1]) : nil
+        
+        let routeOptions = BCRouteOptions()
+        routeOptions.getAccessiblePath = true
+        
+        mapView.getRoute(
+            start: start,
+            goal: goal,
+            wayPoints: waypoints,
+            routeOptions: routeOptions
+        )
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface MultiSelectionViewController : UIViewController <BCMapViewDelegate>
+@property (nonatomic, strong) BCMapView *mapView;
+@property (nonatomic, strong) NSMutableArray<BCLocation *> *selectedLocations;
+@property (nonatomic, assign) BOOL isMultiSelectionEnabled;
+
+@property (nonatomic, weak) IBOutlet UIButton *multiSelectButton;
+@property (nonatomic, weak) IBOutlet UILabel *selectedCountLabel;
+@property (nonatomic, weak) IBOutlet UIButton *clearSelectionButton;
+@end
+
+@implementation MultiSelectionViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.selectedLocations = [NSMutableArray array];
+    [self setupMultiSelection];
+}
+
+- (void)setupMultiSelection {
+    [self updateMultiSelectionUI];
+    
+    [self.multiSelectButton addTarget:self action:@selector(toggleMultiSelection) forControlEvents:UIControlEventTouchUpInside];
+    [self.clearSelectionButton addTarget:self action:@selector(clearAllSelections) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)toggleMultiSelection {
+    self.isMultiSelectionEnabled = !self.isMultiSelectionEnabled;
+    [self.mapView enableMultiSelectionWithEnable:self.isMultiSelectionEnabled];
+    [self updateMultiSelectionUI];
+    
+    if (!self.isMultiSelectionEnabled) {
+        // Clear selections when disabling multi-select
+        [self.selectedLocations removeAllObjects];
+        [self.mapView clearSelection];
+    }
+}
+
+- (void)clearAllSelections {
+    [self.selectedLocations removeAllObjects];
+    [self.mapView clearSelection];
+    [self updateMultiSelectionUI];
+}
+
+- (void)updateMultiSelectionUI {
+    NSString *buttonTitle = self.isMultiSelectionEnabled ? @"Disable Multi-Select" : @"Enable Multi-Select";
+    [self.multiSelectButton setTitle:buttonTitle forState:UIControlStateNormal];
+    
+    self.selectedCountLabel.text = [NSString stringWithFormat:@"Selected: %lu", (unsigned long)self.selectedLocations.count];
+    self.clearSelectionButton.enabled = self.selectedLocations.count > 0;
+    
+    // Update button colors
+    self.multiSelectButton.backgroundColor = self.isMultiSelectionEnabled ? [UIColor systemRedColor] : [UIColor systemBlueColor];
+    self.clearSelectionButton.alpha = self.selectedLocations.count == 0 ? 0.5 : 1.0;
+}
+
+#pragma mark - BCMapViewDelegate
+
+- (void)mapView:(BCMapView *)mapView didSelectLocation:(BCLocation *)location {
+    if (self.isMultiSelectionEnabled) {
+        // Check if already selected
+        BOOL alreadySelected = NO;
+        for (BCLocation *selectedLocation in self.selectedLocations) {
+            if ([selectedLocation.id isEqualToString:location.id]) {
+                alreadySelected = YES;
+                break;
+            }
+        }
+        
+        if (!alreadySelected) {
+            [self.selectedLocations addObject:location];
+            NSLog(@"✅ Added to selection: %@", location.name ?: @"Unknown");
+        } else {
+            // Remove from selection
+            NSMutableArray *toRemove = [NSMutableArray array];
+            for (BCLocation *selectedLocation in self.selectedLocations) {
+                if ([selectedLocation.id isEqualToString:location.id]) {
+                    [toRemove addObject:selectedLocation];
+                }
+            }
+            [self.selectedLocations removeObjectsInArray:toRemove];
+            NSLog(@"❌ Removed from selection: %@", location.name ?: @"Unknown");
+        }
+    } else {
+        // Single selection mode
+        [self.selectedLocations removeAllObjects];
+        [self.selectedLocations addObject:location];
+        NSLog(@"📍 Single selection: %@", location.name ?: @"Unknown");
+    }
+    
+    [self updateMultiSelectionUI];
+    [self showSelectionSummary];
+}
+
+- (void)showSelectionSummary {
+    if (self.selectedLocations.count == 0) return;
+    
+    NSMutableArray *locationNames = [NSMutableArray array];
+    for (BCLocation *location in self.selectedLocations) {
+        if (location.name) {
+            [locationNames addObject:location.name];
+        }
+    }
+    
+    NSString *message = [NSString stringWithFormat:@"Selected locations: %@", [locationNames componentsJoinedByString:@", "]];
+    
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Selection" 
+                                                                   message:message 
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    
+    if (self.selectedLocations.count >= 2) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Plan Route" 
+                                                  style:UIAlertActionStyleDefault 
+                                                handler:^(UIAlertAction *action) {
+            [self planRouteWithMultipleLocations];
+        }]];
+    }
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)planRouteWithMultipleLocations {
+    if (self.selectedLocations.count < 2) return;
+    
+    BCLocation *start = self.selectedLocations.firstObject;
+    BCLocation *goal = self.selectedLocations.lastObject;
+    NSArray *waypoints = nil;
+    
+    if (self.selectedLocations.count > 2) {
+        NSRange waypointRange = NSMakeRange(1, self.selectedLocations.count - 2);
+        waypoints = [self.selectedLocations subarrayWithRange:waypointRange];
+    }
+    
+    BCRouteOptions *routeOptions = [[BCRouteOptions alloc] init];
+    routeOptions.getAccessiblePath = YES;
+    
+    [self.mapView getRouteWithStart:start 
+                               goal:goal 
+                          wayPoints:waypoints 
+                       routeOptions:routeOptions];
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Custom UI Overlays
+
+### Information Overlay
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class MapInfoOverlay: UIView {
+    private var titleLabel: UILabel!
+    private var subtitleLabel: UILabel!
+    private var iconImageView: UIImageView!
+    private var actionButton: UIButton!
+    
+    var onActionTapped: (() -> Void)?
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
+        backgroundColor = UIColor.systemBackground
+        layer.cornerRadius = 16
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 4)
+        layer.shadowRadius = 8
+        layer.shadowOpacity = 0.1
+        
+        iconImageView = UIImageView()
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.tintColor = .systemBlue
+        
+        titleLabel = UILabel()
+        titleLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        titleLabel.textColor = .label
+        titleLabel.numberOfLines = 2
+        
+        subtitleLabel = UILabel()
+        subtitleLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.numberOfLines = 3
+        
+        actionButton = UIButton(type: .system)
+        actionButton.backgroundColor = .systemBlue
+        actionButton.setTitleColor(.white, for: .normal)
+        actionButton.layer.cornerRadius = 8
+        actionButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        actionButton.addTarget(self, action: #selector(actionButtonTapped), for: .touchUpInside)
+        
+        let contentStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        contentStack.axis = .vertical
+        contentStack.spacing = 4
+        
+        let topStack = UIStackView(arrangedSubviews: [iconImageView, contentStack])
+        topStack.axis = .horizontal
+        topStack.spacing = 12
+        topStack.alignment = .top
+        
+        let mainStack = UIStackView(arrangedSubviews: [topStack, actionButton])
+        mainStack.axis = .vertical
+        mainStack.spacing = 16
+        mainStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        addSubview(mainStack)
+        
+        NSLayoutConstraint.activate([
+            iconImageView.widthAnchor.constraint(equalToConstant: 32),
+            iconImageView.heightAnchor.constraint(equalToConstant: 32),
+            actionButton.heightAnchor.constraint(equalToConstant: 44),
+            mainStack.topAnchor.constraint(equalTo: topAnchor, constant: 16),
+            mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            mainStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16)
+        ])
+    }
+    
+    func configure(
+        title: String,
+        subtitle: String,
+        icon: UIImage?,
+        actionTitle: String,
+        onAction: @escaping () -> Void
+    ) {
+        titleLabel.text = title
+        subtitleLabel.text = subtitle
+        iconImageView.image = icon
+        actionButton.setTitle(actionTitle, for: .normal)
+        onActionTapped = onAction
+    }
+    
+    @objc private func actionButtonTapped() {
+        onActionTapped?()
+    }
+    
+    func show(in parentView: UIView, animated: Bool = true) {
+        parentView.addSubview(self)
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            leadingAnchor.constraint(equalTo: parentView.leadingAnchor, constant: 16),
+            trailingAnchor.constraint(equalTo: parentView.trailingAnchor, constant: -16),
+            bottomAnchor.constraint(equalTo: parentView.safeAreaLayoutGuide.bottomAnchor, constant: -16)
+        ])
+        
+        if animated {
+            alpha = 0
+            transform = CGAffineTransform(translationX: 0, y: 50)
+            
+            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
+                self.alpha = 1
+                self.transform = .identity
+            }
+        }
+    }
+    
+    func hide(animated: Bool = true, completion: (() -> Void)? = nil) {
+        if animated {
+            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseIn, animations: {
+                self.alpha = 0
+                self.transform = CGAffineTransform(translationX: 0, y: 50)
+            }) { _ in
+                self.removeFromSuperview()
+                completion?()
+            }
+        } else {
+            removeFromSuperview()
+            completion?()
+        }
+    }
+}
+
+// Usage example
+func showLocationInfo(_ location: BCLocation) {
+    let overlay = MapInfoOverlay()
+    
+    overlay.configure(
+        title: location.name ?? "Unknown Location",
+        subtitle: location.locationDescription ?? "No description available",
+        icon: UIImage(systemName: "mappin.circle.fill"),
+        actionTitle: "Get Directions"
+    ) { [weak self] in
+        self?.startNavigationTo(location)
+        overlay.hide(animated: true)
+    }
+    
+    overlay.show(in: view, animated: true)
+    
+    // Auto-hide after 10 seconds
+    DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+        overlay.hide(animated: true)
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface MapInfoOverlay : UIView
+- (void)configureWithTitle:(NSString *)title 
+                  subtitle:(NSString *)subtitle 
+                      icon:(UIImage *)icon 
+               actionTitle:(NSString *)actionTitle 
+                  onAction:(void (^)(void))onAction;
+- (void)showInParentView:(UIView *)parentView animated:(BOOL)animated;
+- (void)hideAnimated:(BOOL)animated completion:(void (^)(void))completion;
+@end
+
+@implementation MapInfoOverlay {
+    UILabel *_titleLabel;
+    UILabel *_subtitleLabel;
+    UIImageView *_iconImageView;
+    UIButton *_actionButton;
+    void (^_onActionTapped)(void);
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setupUI];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setupUI];
+    }
+    return self;
+}
+
+- (void)setupUI {
+    self.backgroundColor = [UIColor systemBackgroundColor];
+    self.layer.cornerRadius = 16;
+    self.layer.shadowColor = [UIColor blackColor].CGColor;
+    self.layer.shadowOffset = CGSizeMake(0, 4);
+    self.layer.shadowRadius = 8;
+    self.layer.shadowOpacity = 0.1;
+    
+    _iconImageView = [[UIImageView alloc] init];
+    _iconImageView.contentMode = UIViewContentModeScaleAspectFit;
+    _iconImageView.tintColor = [UIColor systemBlueColor];
+    
+    _titleLabel = [[UILabel alloc] init];
+    _titleLabel.font = [UIFont systemFontOfSize:18 weight:UIFontWeightSemibold];
+    _titleLabel.textColor = [UIColor labelColor];
+    _titleLabel.numberOfLines = 2;
+    
+    _subtitleLabel = [[UILabel alloc] init];
+    _subtitleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightRegular];
+    _subtitleLabel.textColor = [UIColor secondaryLabelColor];
+    _subtitleLabel.numberOfLines = 3;
+    
+    _actionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    _actionButton.backgroundColor = [UIColor systemBlueColor];
+    [_actionButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    _actionButton.layer.cornerRadius = 8;
+    _actionButton.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
+    [_actionButton addTarget:self action:@selector(actionButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    
+    UIStackView *contentStack = [[UIStackView alloc] initWithArrangedSubviews:@[_titleLabel, _subtitleLabel]];
+    contentStack.axis = UILayoutConstraintAxisVertical;
+    contentStack.spacing = 4;
+    
+    UIStackView *topStack = [[UIStackView alloc] initWithArrangedSubviews:@[_iconImageView, contentStack]];
+    topStack.axis = UILayoutConstraintAxisHorizontal;
+    topStack.spacing = 12;
+    topStack.alignment = UIStackViewAlignmentTop;
+    
+    UIStackView *mainStack = [[UIStackView alloc] initWithArrangedSubviews:@[topStack, _actionButton]];
+    mainStack.axis = UILayoutConstraintAxisVertical;
+    mainStack.spacing = 16;
+    mainStack.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [self addSubview:mainStack];
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [_iconImageView.widthAnchor constraintEqualToConstant:32],
+        [_iconImageView.heightAnchor constraintEqualToConstant:32],
+        [_actionButton.heightAnchor constraintEqualToConstant:44],
+        [mainStack.topAnchor constraintEqualToAnchor:self.topAnchor constant:16],
+        [mainStack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:16],
+        [mainStack.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-16],
+        [mainStack.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-16]
+    ]];
+}
+
+- (void)configureWithTitle:(NSString *)title 
+                  subtitle:(NSString *)subtitle 
+                      icon:(UIImage *)icon 
+               actionTitle:(NSString *)actionTitle 
+                  onAction:(void (^)(void))onAction {
+    _titleLabel.text = title;
+    _subtitleLabel.text = subtitle;
+    _iconImageView.image = icon;
+    [_actionButton setTitle:actionTitle forState:UIControlStateNormal];
+    _onActionTapped = onAction;
+}
+
+- (void)actionButtonTapped {
+    if (_onActionTapped) {
+        _onActionTapped();
+    }
+}
+
+- (void)showInParentView:(UIView *)parentView animated:(BOOL)animated {
+    [parentView addSubview:self];
+    self.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [self.leadingAnchor constraintEqualToAnchor:parentView.leadingAnchor constant:16],
+        [self.trailingAnchor constraintEqualToAnchor:parentView.trailingAnchor constant:-16],
+        [self.bottomAnchor constraintEqualToAnchor:parentView.safeAreaLayoutGuide.bottomAnchor constant:-16]
+    ]];
+    
+    if (animated) {
+        self.alpha = 0;
+        self.transform = CGAffineTransformMakeTranslation(0, 50);
+        
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            self.alpha = 1;
+            self.transform = CGAffineTransformIdentity;
+        } completion:nil];
+    }
+}
+
+- (void)hideAnimated:(BOOL)animated completion:(void (^)(void))completion {
+    if (animated) {
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            self.alpha = 0;
+            self.transform = CGAffineTransformMakeTranslation(0, 50);
+        } completion:^(BOOL finished) {
+            [self removeFromSuperview];
+            if (completion) completion();
+        }];
+    } else {
+        [self removeFromSuperview];
+        if (completion) completion();
+    }
+}
+
+@end
+
+// Usage example
+- (void)showLocationInfo:(BCLocation *)location {
+    MapInfoOverlay *overlay = [[MapInfoOverlay alloc] init];
+    
+    [overlay configureWithTitle:(location.name ?: @"Unknown Location")
+                       subtitle:(location.locationDescription ?: @"No description available")
+                           icon:[UIImage systemImageNamed:@"mappin.circle.fill"]
+                    actionTitle:@"Get Directions"
+                       onAction:^{
+        [self startNavigationTo:location];
+        [overlay hideAnimated:YES completion:nil];
+    }];
+    
+    [overlay showInParentView:self.view animated:YES];
+    
+    // Auto-hide after 10 seconds
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [overlay hideAnimated:YES completion:nil];
+    });
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+### Performance Optimization
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class InteractionManager {
+    private var lastInteractionTime: Date = Date()
+    private let interactionThrottle: TimeInterval = 0.1 // 100ms throttle
+    
+    func shouldProcessInteraction() -> Bool {
+        let now = Date()
+        let timeSinceLastInteraction = now.timeIntervalSince(lastInteractionTime)
+        
+        if timeSinceLastInteraction >= interactionThrottle {
+            lastInteractionTime = now
+            return true
+        }
+        
+        return false
+    }
+    
+    // Debounced search
+    private var searchTimer: Timer?
+    
+    func performDebouncedSearch(_ query: String, delay: TimeInterval = 0.5) {
+        searchTimer?.invalidate()
+        
+        searchTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { _ in
+            // Perform actual search
+            self.executeSearch(query)
+        }
+    }
+    
+    private func executeSearch(_ query: String) {
+        // Implement search logic
+        print("Searching for: \(query)")
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface InteractionManager : NSObject
+- (BOOL)shouldProcessInteraction;
+- (void)performDebouncedSearch:(NSString *)query delay:(NSTimeInterval)delay;
+@end
+
+@implementation InteractionManager {
+    NSDate *_lastInteractionTime;
+    NSTimeInterval _interactionThrottle;
+    NSTimer *_searchTimer;
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _lastInteractionTime = [NSDate date];
+        _interactionThrottle = 0.1; // 100ms throttle
+    }
+    return self;
+}
+
+- (BOOL)shouldProcessInteraction {
+    NSDate *now = [NSDate date];
+    NSTimeInterval timeSinceLastInteraction = [now timeIntervalSinceDate:_lastInteractionTime];
+    
+    if (timeSinceLastInteraction >= _interactionThrottle) {
+        _lastInteractionTime = now;
+        return YES;
+    }
+    
+    return NO;
+}
+
+- (void)performDebouncedSearch:(NSString *)query delay:(NSTimeInterval)delay {
+    [_searchTimer invalidate];
+    
+    _searchTimer = [NSTimer scheduledTimerWithTimeInterval:delay repeats:NO block:^(NSTimer *timer) {
+        [self executeSearch:query];
+    }];
+}
+
+- (void)executeSearch:(NSString *)query {
+    // Implement search logic
+    NSLog(@"Searching for: %@", query);
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Related Topics
+
+- [Locations](./locations) - Working with location selection and data
+- [Building Floor Selection](./building-floor-selection) - Floor switching interactions
+- [Wayfinding](./wayfinding) - Route planning and navigation interactions
+- [Error Handling](./error-handling) - Handling interaction errors gracefully

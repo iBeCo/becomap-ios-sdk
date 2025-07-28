@@ -1,0 +1,902 @@
+---
+sidebar_position: 10
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Error Handling
+
+Comprehensive error handling is crucial for building robust indoor navigation applications. This guide explains how to handle various error scenarios in the Becomap iOS SDK and implement proper error recovery strategies.
+
+## Overview
+
+The Becomap iOS SDK provides error handling through:
+
+- **Delegate Error Callbacks**: Centralized error reporting through `mapView(_:didReceiveError:)`
+- **Operation-Specific Errors**: Detailed error information for specific operations
+- **Error Recovery**: Strategies for handling and recovering from errors
+- **User-Friendly Messages**: Converting technical errors to user-understandable messages
+
+## Error Types
+
+### Initialization Errors
+
+Errors that occur during SDK initialization and site loading:
+
+- **Authentication Failures**: Invalid client credentials
+- **Network Errors**: Connection timeouts, no internet connectivity
+- **Site Loading Errors**: Invalid site ID, site not found
+- **Data Parsing Errors**: Malformed site data
+
+### Runtime Errors
+
+Errors that occur during normal SDK operation:
+
+- **Route Calculation Errors**: No route found, invalid locations
+- **Floor Selection Errors**: Invalid floor ID, floor not available
+- **Location Errors**: Location not found, invalid location data
+- **Cache Errors**: Data loading failures, cache corruption
+
+## Basic Error Handling
+
+### Implementing Error Delegate
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+extension MapViewController: BCMapViewDelegate {
+    func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+        print("❌ SDK Error received: \(payload)")
+        
+        // Parse error payload
+        if let errorDict = payload as? [String: Any] {
+            handleStructuredError(errorDict)
+        } else {
+            handleGenericError(payload)
+        }
+    }
+    
+    private func handleStructuredError(_ errorDict: [String: Any]) {
+        let operation = errorDict["operation"] as? String ?? "unknown"
+        let message = errorDict["message"] as? String ?? "Unknown error"
+        let debug = errorDict["debug"] as? [String: Any]
+        
+        print("Error in operation: \(operation)")
+        print("Message: \(message)")
+        if let debug = debug {
+            print("Debug info: \(debug)")
+        }
+        
+        // Handle specific operations
+        switch operation {
+        case "init":
+            handleInitializationError(message, debug: debug)
+        case "getRoute":
+            handleRouteError(message, debug: debug)
+        case "selectFloor":
+            handleFloorError(message, debug: debug)
+        case "searchForLocation":
+            handleSearchError(message, debug: debug)
+        case "showRouteOnFloor":
+            handleRouteDisplayError(message, debug: debug)
+        default:
+            handleUnknownError(operation, message: message)
+        }
+    }
+    
+    private func handleGenericError(_ payload: Any) {
+        let errorMessage = "An unexpected error occurred: \(payload)"
+        print("❌ Generic error: \(errorMessage)")
+        
+        showErrorAlert(
+            title: "Error",
+            message: "Something went wrong. Please try again.",
+            actions: [
+                UIAlertAction(title: "Retry", style: .default) { _ in
+                    self.retryLastOperation()
+                },
+                UIAlertAction(title: "OK", style: .cancel)
+            ]
+        )
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
+    NSLog(@"❌ SDK Error received: %@", payload);
+    
+    // Parse error payload
+    if ([payload isKindOfClass:[NSDictionary class]]) {
+        [self handleStructuredError:(NSDictionary *)payload];
+    } else {
+        [self handleGenericError:payload];
+    }
+}
+
+- (void)handleStructuredError:(NSDictionary *)errorDict {
+    NSString *operation = errorDict[@"operation"] ?: @"unknown";
+    NSString *message = errorDict[@"message"] ?: @"Unknown error";
+    NSDictionary *debug = errorDict[@"debug"];
+    
+    NSLog(@"Error in operation: %@", operation);
+    NSLog(@"Message: %@", message);
+    if (debug) {
+        NSLog(@"Debug info: %@", debug);
+    }
+    
+    // Handle specific operations
+    if ([operation isEqualToString:@"init"]) {
+        [self handleInitializationError:message debug:debug];
+    } else if ([operation isEqualToString:@"getRoute"]) {
+        [self handleRouteError:message debug:debug];
+    } else if ([operation isEqualToString:@"selectFloor"]) {
+        [self handleFloorError:message debug:debug];
+    } else if ([operation isEqualToString:@"searchForLocation"]) {
+        [self handleSearchError:message debug:debug];
+    } else if ([operation isEqualToString:@"showRouteOnFloor"]) {
+        [self handleRouteDisplayError:message debug:debug];
+    } else {
+        [self handleUnknownError:operation message:message];
+    }
+}
+
+- (void)handleGenericError:(id)payload {
+    NSString *errorMessage = [NSString stringWithFormat:@"An unexpected error occurred: %@", payload];
+    NSLog(@"❌ Generic error: %@", errorMessage);
+    
+    UIAlertAction *retryAction = [UIAlertAction actionWithTitle:@"Retry" 
+                                                          style:UIAlertActionStyleDefault 
+                                                        handler:^(UIAlertAction *action) {
+        [self retryLastOperation];
+    }];
+    
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"OK" 
+                                                           style:UIAlertActionStyleCancel 
+                                                         handler:nil];
+    
+    [self showErrorAlertWithTitle:@"Error" 
+                          message:@"Something went wrong. Please try again." 
+                          actions:@[retryAction, cancelAction]];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Specific Error Handlers
+
+### Initialization Error Handling
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+private func handleInitializationError(_ message: String, debug: [String: Any]?) {
+    print("🚨 Initialization Error: \(message)")
+    
+    var userMessage = "Failed to load the venue."
+    var retryAction: (() -> Void)?
+    
+    // Analyze error message for specific handling
+    if message.lowercased().contains("authentication") || 
+       message.lowercased().contains("unauthorized") {
+        userMessage = "Authentication failed. Please check your credentials."
+        // Don't offer retry for auth errors
+    } else if message.lowercased().contains("network") || 
+              message.lowercased().contains("connection") {
+        userMessage = "Network connection failed. Please check your internet connection."
+        retryAction = { [weak self] in
+            self?.reloadSite()
+        }
+    } else if message.lowercased().contains("site") || 
+              message.lowercased().contains("not found") {
+        userMessage = "Venue not found. Please contact support."
+    } else {
+        userMessage = "Failed to load venue. Please try again."
+        retryAction = { [weak self] in
+            self?.reloadSite()
+        }
+    }
+    
+    var actions: [UIAlertAction] = [
+        UIAlertAction(title: "OK", style: .cancel)
+    ]
+    
+    if let retry = retryAction {
+        actions.insert(
+            UIAlertAction(title: "Retry", style: .default) { _ in retry() },
+            at: 0
+        )
+    }
+    
+    showErrorAlert(
+        title: "Loading Error",
+        message: userMessage,
+        actions: actions
+    )
+}
+
+private func reloadSite() {
+    // Show loading indicator
+    showLoadingIndicator()
+    
+    // Retry site loading
+    mapView.renderSiteWith(
+        clientId: clientId,
+        clientSecret: clientSecret,
+        siteId: siteId
+    )
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)handleInitializationError:(NSString *)message debug:(NSDictionary *)debug {
+    NSLog(@"🚨 Initialization Error: %@", message);
+    
+    NSString *userMessage = @"Failed to load the venue.";
+    void (^retryAction)(void) = nil;
+    
+    // Analyze error message for specific handling
+    NSString *lowerMessage = [message lowercaseString];
+    if ([lowerMessage containsString:@"authentication"] || [lowerMessage containsString:@"unauthorized"]) {
+        userMessage = @"Authentication failed. Please check your credentials.";
+        // Don't offer retry for auth errors
+    } else if ([lowerMessage containsString:@"network"] || [lowerMessage containsString:@"connection"]) {
+        userMessage = @"Network connection failed. Please check your internet connection.";
+        retryAction = ^{
+            [self reloadSite];
+        };
+    } else if ([lowerMessage containsString:@"site"] || [lowerMessage containsString:@"not found"]) {
+        userMessage = @"Venue not found. Please contact support.";
+    } else {
+        userMessage = @"Failed to load venue. Please try again.";
+        retryAction = ^{
+            [self reloadSite];
+        };
+    }
+    
+    NSMutableArray *actions = [NSMutableArray arrayWithObject:
+        [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]
+    ];
+    
+    if (retryAction) {
+        UIAlertAction *retryAlertAction = [UIAlertAction actionWithTitle:@"Retry" 
+                                                                   style:UIAlertActionStyleDefault 
+                                                                 handler:^(UIAlertAction *action) {
+            retryAction();
+        }];
+        [actions insertObject:retryAlertAction atIndex:0];
+    }
+    
+    [self showErrorAlertWithTitle:@"Loading Error" message:userMessage actions:actions];
+}
+
+- (void)reloadSite {
+    // Show loading indicator
+    [self showLoadingIndicator];
+    
+    // Retry site loading
+    [self.mapView renderSiteWithClientId:self.clientId 
+                            clientSecret:self.clientSecret 
+                                  siteId:self.siteId];
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Route Calculation Error Handling
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+private func handleRouteError(_ message: String, debug: [String: Any]?) {
+    print("🗺️ Route Error: \(message)")
+    
+    var userMessage = "Unable to calculate route."
+    var suggestions: [String] = []
+    
+    // Analyze error for specific guidance
+    if message.lowercased().contains("no route") || 
+       message.lowercased().contains("path not found") {
+        userMessage = "No route found between the selected locations."
+        suggestions = [
+            "Try selecting locations on the same floor",
+            "Check if both locations are accessible",
+            "Select different start or end points"
+        ]
+    } else if message.lowercased().contains("distance") || 
+              message.lowercased().contains("too far") {
+        userMessage = "The selected locations are too far apart."
+        suggestions = [
+            "Select closer locations",
+            "Add waypoints to break up the route"
+        ]
+    } else if message.lowercased().contains("invalid location") {
+        userMessage = "One or more selected locations are invalid."
+        suggestions = [
+            "Re-select your start and end locations",
+            "Make sure locations are properly loaded"
+        ]
+    }
+    
+    // Clear any existing route display
+    mapView.clearAllRoute()
+    
+    // Show error with suggestions
+    showRouteErrorAlert(message: userMessage, suggestions: suggestions)
+}
+
+private func showRouteErrorAlert(message: String, suggestions: [String]) {
+    var alertMessage = message
+    
+    if !suggestions.isEmpty {
+        alertMessage += "\n\nSuggestions:\n"
+        for (index, suggestion) in suggestions.enumerated() {
+            alertMessage += "• \(suggestion)"
+            if index < suggestions.count - 1 {
+                alertMessage += "\n"
+            }
+        }
+    }
+    
+    let alert = UIAlertController(
+        title: "Route Not Found",
+        message: alertMessage,
+        preferredStyle: .alert
+    )
+    
+    alert.addAction(UIAlertAction(title: "OK", style: .default))
+    
+    present(alert, animated: true)
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)handleRouteError:(NSString *)message debug:(NSDictionary *)debug {
+    NSLog(@"🗺️ Route Error: %@", message);
+    
+    NSString *userMessage = @"Unable to calculate route.";
+    NSMutableArray *suggestions = [NSMutableArray array];
+    
+    // Analyze error for specific guidance
+    NSString *lowerMessage = [message lowercaseString];
+    if ([lowerMessage containsString:@"no route"] || [lowerMessage containsString:@"path not found"]) {
+        userMessage = @"No route found between the selected locations.";
+        [suggestions addObjectsFromArray:@[
+            @"Try selecting locations on the same floor",
+            @"Check if both locations are accessible",
+            @"Select different start or end points"
+        ]];
+    } else if ([lowerMessage containsString:@"distance"] || [lowerMessage containsString:@"too far"]) {
+        userMessage = @"The selected locations are too far apart.";
+        [suggestions addObjectsFromArray:@[
+            @"Select closer locations",
+            @"Add waypoints to break up the route"
+        ]];
+    } else if ([lowerMessage containsString:@"invalid location"]) {
+        userMessage = @"One or more selected locations are invalid.";
+        [suggestions addObjectsFromArray:@[
+            @"Re-select your start and end locations",
+            @"Make sure locations are properly loaded"
+        ]];
+    }
+    
+    // Clear any existing route display
+    [self.mapView clearAllRoute];
+    
+    // Show error with suggestions
+    [self showRouteErrorAlertWithMessage:userMessage suggestions:suggestions];
+}
+
+- (void)showRouteErrorAlertWithMessage:(NSString *)message suggestions:(NSArray<NSString *> *)suggestions {
+    NSMutableString *alertMessage = [message mutableCopy];
+    
+    if (suggestions.count > 0) {
+        [alertMessage appendString:@"\n\nSuggestions:\n"];
+        for (NSInteger i = 0; i < suggestions.count; i++) {
+            [alertMessage appendFormat:@"• %@", suggestions[i]];
+            if (i < suggestions.count - 1) {
+                [alertMessage appendString:@"\n"];
+            }
+        }
+    }
+    
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Route Not Found"
+                                                                   message:alertMessage
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Error Recovery Strategies
+
+### Automatic Retry Logic
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class ErrorRecoveryManager {
+    private var retryCount: [String: Int] = [:]
+    private let maxRetries = 3
+    private let retryDelay: TimeInterval = 2.0
+    
+    func shouldRetry(operation: String) -> Bool {
+        let count = retryCount[operation] ?? 0
+        return count < maxRetries
+    }
+    
+    func incrementRetryCount(operation: String) {
+        retryCount[operation] = (retryCount[operation] ?? 0) + 1
+    }
+    
+    func resetRetryCount(operation: String) {
+        retryCount[operation] = 0
+    }
+    
+    func retryWithDelay(operation: String, action: @escaping () -> Void) {
+        guard shouldRetry(operation: operation) else {
+            print("❌ Max retries exceeded for operation: \(operation)")
+            return
+        }
+        
+        incrementRetryCount(operation: operation)
+        let currentCount = retryCount[operation] ?? 0
+        
+        print("🔄 Retrying operation '\(operation)' (attempt \(currentCount)/\(maxRetries))")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay) {
+            action()
+        }
+    }
+}
+
+// Usage in error handling
+private let errorRecovery = ErrorRecoveryManager()
+
+private func handleNetworkError(operation: String, retryAction: @escaping () -> Void) {
+    if errorRecovery.shouldRetry(operation: operation) {
+        showRetryAlert(operation: operation) { [weak self] in
+            self?.errorRecovery.retryWithDelay(operation: operation, action: retryAction)
+        }
+    } else {
+        showFinalErrorAlert(operation: operation)
+    }
+}
+
+private func showRetryAlert(operation: String, retryAction: @escaping () -> Void) {
+    let alert = UIAlertController(
+        title: "Connection Error",
+        message: "Failed to \(operation). Would you like to try again?",
+        preferredStyle: .alert
+    )
+    
+    alert.addAction(UIAlertAction(title: "Retry", style: .default) { _ in
+        retryAction()
+    })
+    
+    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+    
+    present(alert, animated: true)
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface ErrorRecoveryManager : NSObject
+- (BOOL)shouldRetryOperation:(NSString *)operation;
+- (void)incrementRetryCountForOperation:(NSString *)operation;
+- (void)resetRetryCountForOperation:(NSString *)operation;
+- (void)retryWithDelayForOperation:(NSString *)operation action:(void (^)(void))action;
+@end
+
+@implementation ErrorRecoveryManager {
+    NSMutableDictionary<NSString *, NSNumber *> *_retryCount;
+    NSInteger _maxRetries;
+    NSTimeInterval _retryDelay;
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _retryCount = [NSMutableDictionary dictionary];
+        _maxRetries = 3;
+        _retryDelay = 2.0;
+    }
+    return self;
+}
+
+- (BOOL)shouldRetryOperation:(NSString *)operation {
+    NSInteger count = [_retryCount[operation] integerValue];
+    return count < _maxRetries;
+}
+
+- (void)incrementRetryCountForOperation:(NSString *)operation {
+    NSInteger count = [_retryCount[operation] integerValue];
+    _retryCount[operation] = @(count + 1);
+}
+
+- (void)resetRetryCountForOperation:(NSString *)operation {
+    _retryCount[operation] = @0;
+}
+
+- (void)retryWithDelayForOperation:(NSString *)operation action:(void (^)(void))action {
+    if (![self shouldRetryOperation:operation]) {
+        NSLog(@"❌ Max retries exceeded for operation: %@", operation);
+        return;
+    }
+    
+    [self incrementRetryCountForOperation:operation];
+    NSInteger currentCount = [_retryCount[operation] integerValue];
+    
+    NSLog(@"🔄 Retrying operation '%@' (attempt %ld/%ld)", operation, (long)currentCount, (long)_maxRetries);
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_retryDelay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        action();
+    });
+}
+
+@end
+
+// Usage in error handling
+@property (nonatomic, strong) ErrorRecoveryManager *errorRecovery;
+
+- (void)handleNetworkErrorForOperation:(NSString *)operation retryAction:(void (^)(void))retryAction {
+    if ([self.errorRecovery shouldRetryOperation:operation]) {
+        [self showRetryAlertForOperation:operation retryAction:^{
+            [self.errorRecovery retryWithDelayForOperation:operation action:retryAction];
+        }];
+    } else {
+        [self showFinalErrorAlertForOperation:operation];
+    }
+}
+
+- (void)showRetryAlertForOperation:(NSString *)operation retryAction:(void (^)(void))retryAction {
+    NSString *message = [NSString stringWithFormat:@"Failed to %@. Would you like to try again?", operation];
+    
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Connection Error"
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Retry" 
+                                              style:UIAlertActionStyleDefault 
+                                            handler:^(UIAlertAction *action) {
+        retryAction();
+    }]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" 
+                                              style:UIAlertActionStyleCancel 
+                                            handler:nil]];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Error Logging and Analytics
+
+### Comprehensive Error Logging
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class ErrorLogger {
+    static let shared = ErrorLogger()
+    
+    private init() {}
+    
+    func logError(
+        operation: String,
+        message: String,
+        debug: [String: Any]? = nil,
+        userInfo: [String: Any]? = nil
+    ) {
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        
+        var logEntry: [String: Any] = [
+            "timestamp": timestamp,
+            "operation": operation,
+            "message": message,
+            "platform": "iOS",
+            "sdk_version": "1.0.0"
+        ]
+        
+        if let debug = debug {
+            logEntry["debug"] = debug
+        }
+        
+        if let userInfo = userInfo {
+            logEntry["user_info"] = userInfo
+        }
+        
+        // Log to console
+        print("📊 Error Log: \(logEntry)")
+        
+        // Send to analytics service (implement based on your analytics provider)
+        sendToAnalytics(logEntry)
+        
+        // Store locally for offline analysis
+        storeLocalLog(logEntry)
+    }
+    
+    private func sendToAnalytics(_ logEntry: [String: Any]) {
+        // Implement analytics integration
+        // Example: Firebase, Mixpanel, custom analytics
+    }
+    
+    private func storeLocalLog(_ logEntry: [String: Any]) {
+        // Store in UserDefaults, Core Data, or file system
+        var logs = UserDefaults.standard.array(forKey: "error_logs") as? [[String: Any]] ?? []
+        logs.append(logEntry)
+        
+        // Keep only last 100 logs
+        if logs.count > 100 {
+            logs = Array(logs.suffix(100))
+        }
+        
+        UserDefaults.standard.set(logs, forKey: "error_logs")
+    }
+}
+
+// Usage in error handling
+private func handleStructuredError(_ errorDict: [String: Any]) {
+    let operation = errorDict["operation"] as? String ?? "unknown"
+    let message = errorDict["message"] as? String ?? "Unknown error"
+    let debug = errorDict["debug"] as? [String: Any]
+    
+    // Log the error
+    ErrorLogger.shared.logError(
+        operation: operation,
+        message: message,
+        debug: debug,
+        userInfo: [
+            "site_id": siteId ?? "unknown",
+            "user_id": currentUserId ?? "anonymous"
+        ]
+    )
+    
+    // Handle the error
+    switch operation {
+    case "init":
+        handleInitializationError(message, debug: debug)
+    // ... other cases
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface ErrorLogger : NSObject
++ (instancetype)shared;
+- (void)logErrorWithOperation:(NSString *)operation 
+                      message:(NSString *)message 
+                        debug:(NSDictionary *)debug 
+                     userInfo:(NSDictionary *)userInfo;
+@end
+
+@implementation ErrorLogger
+
++ (instancetype)shared {
+    static ErrorLogger *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[ErrorLogger alloc] init];
+    });
+    return sharedInstance;
+}
+
+- (void)logErrorWithOperation:(NSString *)operation 
+                      message:(NSString *)message 
+                        debug:(NSDictionary *)debug 
+                     userInfo:(NSDictionary *)userInfo {
+    
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
+    formatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
+    NSString *timestamp = [formatter stringFromDate:[NSDate date]];
+    
+    NSMutableDictionary *logEntry = [NSMutableDictionary dictionaryWithDictionary:@{
+        @"timestamp": timestamp,
+        @"operation": operation ?: @"unknown",
+        @"message": message ?: @"Unknown error",
+        @"platform": @"iOS",
+        @"sdk_version": @"1.0.0"
+    }];
+    
+    if (debug) {
+        logEntry[@"debug"] = debug;
+    }
+    
+    if (userInfo) {
+        logEntry[@"user_info"] = userInfo;
+    }
+    
+    // Log to console
+    NSLog(@"📊 Error Log: %@", logEntry);
+    
+    // Send to analytics service
+    [self sendToAnalytics:[logEntry copy]];
+    
+    // Store locally for offline analysis
+    [self storeLocalLog:[logEntry copy]];
+}
+
+- (void)sendToAnalytics:(NSDictionary *)logEntry {
+    // Implement analytics integration
+    // Example: Firebase, Mixpanel, custom analytics
+}
+
+- (void)storeLocalLog:(NSDictionary *)logEntry {
+    // Store in UserDefaults
+    NSMutableArray *logs = [[[NSUserDefaults standardUserDefaults] arrayForKey:@"error_logs"] mutableCopy];
+    if (!logs) {
+        logs = [NSMutableArray array];
+    }
+    
+    [logs addObject:logEntry];
+    
+    // Keep only last 100 logs
+    if (logs.count > 100) {
+        NSRange range = NSMakeRange(0, logs.count - 100);
+        [logs removeObjectsInRange:range];
+    }
+    
+    [[NSUserDefaults standardUserDefaults] setObject:[logs copy] forKey:@"error_logs"];
+}
+
+@end
+
+// Usage in error handling
+- (void)handleStructuredError:(NSDictionary *)errorDict {
+    NSString *operation = errorDict[@"operation"] ?: @"unknown";
+    NSString *message = errorDict[@"message"] ?: @"Unknown error";
+    NSDictionary *debug = errorDict[@"debug"];
+    
+    // Log the error
+    [[ErrorLogger shared] logErrorWithOperation:operation 
+                                        message:message 
+                                          debug:debug 
+                                       userInfo:@{
+        @"site_id": self.siteId ?: @"unknown",
+        @"user_id": self.currentUserId ?: @"anonymous"
+    }];
+    
+    // Handle the error
+    if ([operation isEqualToString:@"init"]) {
+        [self handleInitializationError:message debug:debug];
+    }
+    // ... other cases
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+### Error Prevention
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+// Validate inputs before making SDK calls
+func validateRouteRequest(start: BCLocation, goal: BCLocation) -> Bool {
+    guard let startId = start.id, !startId.isEmpty else {
+        showErrorAlert(title: "Invalid Start Location", message: "Please select a valid starting point.")
+        return false
+    }
+    
+    guard let goalId = goal.id, !goalId.isEmpty else {
+        showErrorAlert(title: "Invalid Destination", message: "Please select a valid destination.")
+        return false
+    }
+    
+    if startId == goalId {
+        showErrorAlert(title: "Same Location", message: "Start and destination cannot be the same.")
+        return false
+    }
+    
+    return true
+}
+
+// Check network connectivity before operations
+func isNetworkAvailable() -> Bool {
+    // Implement network reachability check
+    // Return true if network is available
+    return true
+}
+
+// Validate SDK state before operations
+func validateSDKState() -> Bool {
+    guard mapView.cacheState == .ready else {
+        showErrorAlert(title: "Loading", message: "Please wait for the venue to finish loading.")
+        return false
+    }
+    
+    return true
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+// Validate inputs before making SDK calls
+- (BOOL)validateRouteRequestWithStart:(BCLocation *)start goal:(BCLocation *)goal {
+    if (!start.id || start.id.length == 0) {
+        [self showErrorAlertWithTitle:@"Invalid Start Location" 
+                              message:@"Please select a valid starting point."];
+        return NO;
+    }
+    
+    if (!goal.id || goal.id.length == 0) {
+        [self showErrorAlertWithTitle:@"Invalid Destination" 
+                              message:@"Please select a valid destination."];
+        return NO;
+    }
+    
+    if ([start.id isEqualToString:goal.id]) {
+        [self showErrorAlertWithTitle:@"Same Location" 
+                              message:@"Start and destination cannot be the same."];
+        return NO;
+    }
+    
+    return YES;
+}
+
+// Check network connectivity before operations
+- (BOOL)isNetworkAvailable {
+    // Implement network reachability check
+    // Return YES if network is available
+    return YES;
+}
+
+// Validate SDK state before operations
+- (BOOL)validateSDKState {
+    if (self.mapView.cacheState != BCCacheStateReady) {
+        [self showErrorAlertWithTitle:@"Loading" 
+                              message:@"Please wait for the venue to finish loading."];
+        return NO;
+    }
+    
+    return YES;
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Related Topics
+
+- [Getting Started](./getting-started) - Initial setup and basic error handling
+- [Sites](./sites) - Site loading error scenarios
+- [Wayfinding](./wayfinding) - Route calculation error handling
+- [Locations](./locations) - Location-related error management

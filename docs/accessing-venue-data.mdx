@@ -1,0 +1,401 @@
+---
+sidebar_position: 6
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Accessing Venue Data
+
+After the map successfully loads and the `didLoadData` callback is triggered, the SDK provides several methods to access venue data including locations, categories, and amenity types. This guide explains how to effectively use these data access methods to build rich indoor mapping applications.
+
+## Overview
+
+Once `mapView(_:didLoadData:)` is called with `success: true`, all venue data is cached and available through the `BCMapView` instance. The SDK provides data retrieval methods to help you build robust applications that handle various data states gracefully.
+
+## Data Access Methods
+
+### getCategories()
+
+Retrieves all location categories available in the venue.
+
+**Returns:** `[BCCategory]` - Array of category objects
+
+**Usage:** Building category filter UI components, organizing location displays.
+
+### getLocations()
+
+Retrieves all locations (points of interest) within the venue.
+
+**Returns:** `[BCLocation]` - Complete array of venue locations
+
+**Usage:** Populating location search interfaces, building directory listings.
+
+### getAmenityLocations()
+
+Retrieves all amenity locations within the venue.
+
+**Returns:** `[BCLocation]` - Array of amenity locations
+
+**Usage:** Building accessibility filters, creating service-based search.
+
+### getAmenityTypes()
+
+Retrieves all available amenity types in the venue.
+
+**Returns:** `[String]` - Array of amenity type strings
+
+**Usage:** Creating amenity filter options, categorizing services.
+
+### getHappenings(type:)
+
+Retrieves happenings/events of a specific type from the venue.
+
+**Parameters:** `type: BCHappeningType` - The type of happenings (.offer, .news, .event)
+
+**Returns:** `[BCHappenings]` - Array of happenings for the specified type
+
+**Usage:** Displaying current offers, news, and events to users.
+
+## Implementation Patterns
+
+### Basic Data Access Pattern
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+extension MapViewController: BCMapViewDelegate {
+    func mapView(_ mapView: BCMapView, didLoadData success: Bool) {
+        guard success else {
+            print("❌ Data loading failed")
+            return
+        }
+        
+        // Site data is now available
+        print("✅ Data loaded successfully")
+        
+        // Access venue data through BCMapView methods
+        loadVenueData()
+    }
+    
+    private func loadVenueData() {
+        // Access all data types
+        let locations = mapView.getLocations()
+        let categories = mapView.getCategories()
+        let amenityLocations = mapView.getAmenityLocations()
+        let amenityTypes = mapView.getAmenityTypes()
+        let offers = mapView.getHappenings(type: .offer)
+        let news = mapView.getHappenings(type: .news)
+        let events = mapView.getHappenings(type: .event)
+
+        setupLocationFeatures(locations)
+        setupCategoryFilters(categories)
+        setupAmenityFilters(amenityLocations, types: amenityTypes)
+        setupHappenings(offers: offers, news: news, events: events)
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)mapView:(BCMapView *)mapView didLoadData:(BOOL)success {
+    if (!success) {
+        NSLog(@"❌ Data loading failed");
+        return;
+    }
+    
+    // Site data is now available
+    NSLog(@"✅ Data loaded successfully");
+    
+    // Access venue data through BCMapView methods
+    [self loadVenueData];
+}
+
+- (void)loadVenueData {
+    // Access all data types
+    NSArray<BCLocation *> *locations = [self.mapView getLocations];
+    NSArray<BCCategory *> *categories = [self.mapView getCategories];
+    NSArray<BCLocation *> *amenityLocations = [self.mapView getAmenityLocations];
+    NSArray<NSString *> *amenityTypes = [self.mapView getAmenityTypes];
+    NSArray<BCHappenings *> *offers = [self.mapView getHappeningsWithType:BCHappeningTypeOffer];
+    NSArray<BCHappenings *> *news = [self.mapView getHappeningsWithType:BCHappeningTypeNews];
+    NSArray<BCHappenings *> *events = [self.mapView getHappeningsWithType:BCHappeningTypeEvent];
+
+    [self setupLocationFeatures:locations];
+    [self setupCategoryFilters:categories];
+    [self setupAmenityFilters:amenityLocations types:amenityTypes];
+    [self setupHappeningsWithOffers:offers news:news events:events];
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Progressive Data Loading
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+private func setupVenueInterface() {
+    // Enable features based on data availability
+    
+    let locations = mapView.getLocations()
+    if !locations.isEmpty {
+        enableLocationSearch()
+        populateLocationDirectory(locations)
+        enableLocationSelection()
+    } else {
+        showLocationLoadingState()
+    }
+    
+    let categories = mapView.getCategories()
+    if !categories.isEmpty {
+        enableCategoryFiltering(categories)
+        setupCategoryNavigation(categories)
+    } else {
+        hideCategoryFeatures()
+    }
+    
+    let amenityLocations = mapView.getAmenityLocations()
+    if !amenityLocations.isEmpty {
+        enableAmenityFiltering(amenityLocations)
+        setupAccessibilityFeatures(amenityLocations)
+    } else {
+        hideAmenityFeatures()
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)setupVenueInterface {
+    // Enable features based on data availability
+    
+    NSArray<BCLocation *> *locations = [self.mapView getLocations];
+    if (locations.count > 0) {
+        [self enableLocationSearch];
+        [self populateLocationDirectory:locations];
+        [self enableLocationSelection];
+    } else {
+        [self showLocationLoadingState];
+    }
+    
+    NSArray<BCCategory *> *categories = [self.mapView getCategories];
+    if (categories.count > 0) {
+        [self enableCategoryFiltering:categories];
+        [self setupCategoryNavigation:categories];
+    } else {
+        [self hideCategoryFeatures];
+    }
+    
+    NSArray<BCLocation *> *amenityLocations = [self.mapView getAmenityLocations];
+    if (amenityLocations.count > 0) {
+        [self enableAmenityFiltering:amenityLocations];
+        [self setupAccessibilityFeatures:amenityLocations];
+    } else {
+        [self hideAmenityFeatures];
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Error Handling
+
+### Graceful Degradation
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+private func handleDataAvailability() {
+    let locations = mapView.getLocations()
+    if locations.isEmpty {
+        disableLocationSearch()
+        showDataUnavailableMessage("Locations")
+    }
+
+    let categories = mapView.getCategories()
+    if categories.isEmpty {
+        showAllLocationsWithoutCategories()
+    }
+
+    let amenityLocations = mapView.getAmenityLocations()
+    if amenityLocations.isEmpty {
+        hideAmenityFilters()
+        showBasicLocationFeatures()
+    }
+}
+
+private func showDataUnavailableMessage(_ dataType: String) {
+    let alert = UIAlertController(
+        title: "Data Unavailable",
+        message: "\(dataType) data is currently unavailable",
+        preferredStyle: .alert
+    )
+    alert.addAction(UIAlertAction(title: "OK", style: .default))
+    present(alert, animated: true)
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)handleDataAvailability {
+    NSArray<BCLocation *> *locations = [self.mapView getLocations];
+    if (locations.count == 0) {
+        [self disableLocationSearch];
+        [self showDataUnavailableMessage:@"Locations"];
+    }
+
+    NSArray<BCCategory *> *categories = [self.mapView getCategories];
+    if (categories.count == 0) {
+        [self showAllLocationsWithoutCategories];
+    }
+
+    NSArray<BCLocation *> *amenityLocations = [self.mapView getAmenityLocations];
+    if (amenityLocations.count == 0) {
+        [self hideAmenityFilters];
+        [self showBasicLocationFeatures];
+    }
+}
+
+- (void)showDataUnavailableMessage:(NSString *)dataType {
+    UIAlertController *alert = [UIAlertController 
+        alertControllerWithTitle:@"Data Unavailable"
+        message:[NSString stringWithFormat:@"%@ data is currently unavailable", dataType]
+        preferredStyle:UIAlertControllerStyleAlert];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Common Use Cases
+
+### Location Directory
+
+Build a searchable, filterable location directory:
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class LocationDirectoryViewController: UIViewController {
+    private var allLocations: [BCLocation] = []
+    private var allCategories: [BCCategory] = []
+    private var filteredLocations: [BCLocation] = []
+    
+    func mapView(_ mapView: BCMapView, didLoadData success: Bool) {
+        guard success else { return }
+        
+        allLocations = mapView.getLocations()
+        allCategories = mapView.getCategories()
+        
+        setupLocationDirectory()
+    }
+    
+    private func setupLocationDirectory() {
+        filteredLocations = allLocations
+        
+        // Setup search
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
+        
+        // Setup category filter
+        setupCategoryFilter()
+        
+        // Update table view
+        tableView.reloadData()
+    }
+    
+    private func filterLocations(query: String, category: BCCategory?) {
+        filteredLocations = allLocations.filter { location in
+            let matchesQuery = query.isEmpty || 
+                location.name?.lowercased().contains(query.lowercased()) == true
+            
+            let matchesCategory = category == nil || 
+                location.categories?.contains { $0.id == category?.id } == true
+            
+            return matchesQuery && matchesCategory
+        }
+        
+        tableView.reloadData()
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface LocationDirectoryViewController : UIViewController
+@property (nonatomic, strong) NSArray<BCLocation *> *allLocations;
+@property (nonatomic, strong) NSArray<BCCategory *> *allCategories;
+@property (nonatomic, strong) NSArray<BCLocation *> *filteredLocations;
+@end
+
+@implementation LocationDirectoryViewController
+
+- (void)mapView:(BCMapView *)mapView didLoadData:(BOOL)success {
+    if (!success) return;
+    
+    self.allLocations = [mapView getLocations];
+    self.allCategories = [mapView getCategories];
+    
+    [self setupLocationDirectory];
+}
+
+- (void)setupLocationDirectory {
+    self.filteredLocations = self.allLocations;
+    
+    // Setup search and filters
+    [self setupCategoryFilter];
+    
+    // Update table view
+    [self.tableView reloadData];
+}
+
+- (void)filterLocationsWithQuery:(NSString *)query category:(BCCategory *)category {
+    NSMutableArray *filtered = [NSMutableArray array];
+    
+    for (BCLocation *location in self.allLocations) {
+        BOOL matchesQuery = query.length == 0 || 
+            [location.name.lowercaseString containsString:query.lowercaseString];
+        
+        BOOL matchesCategory = category == nil || [self location:location hasCategory:category];
+        
+        if (matchesQuery && matchesCategory) {
+            [filtered addObject:location];
+        }
+    }
+    
+    self.filteredLocations = [filtered copy];
+    [self.tableView reloadData];
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+- **Access data only after** `didLoadData` callback with `success: true`
+- **Cache processed data** for performance optimization
+- **Handle empty datasets** gracefully with fallback UI
+- **Implement progressive loading** for better user experience
+- **Use efficient filtering** for large location datasets
+- **Clear cached data** when no longer needed to manage memory

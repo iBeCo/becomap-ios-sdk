@@ -1,0 +1,11 @@
+framework module becomap_ios {
+  umbrella header "becomap_ios.h"
+  export *
+
+  module * { export * }
+}
+
+module becomap_ios.Swift {
+  header "becomap_ios-Swift.h"
+  requires objc
+}

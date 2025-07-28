@@ -1,0 +1,194 @@
+---
+sidebar_position: 2
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Getting Started
+
+The Beco iOS SDK provides indoor mapping and navigation capabilities for iOS applications. This guide will help you integrate the SDK and display your first indoor map.
+
+## Requirements
+
+- iOS 13.0 or later
+- Xcode 12.0 or later
+- Swift 5.0 or later
+- Valid Beco client credentials
+
+## Installation
+
+### Swift Package Manager (Recommended)
+
+1. In Xcode, go to **File → Add Package Dependencies**
+2. Enter the repository URL:
+   ```
+   https://github.com/sayone-tech/becomap-ios-sdk
+   ```
+3. Select the version and add to your target
+
+### Manual Integration
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/sayone-tech/becomap-ios-sdk.git
+   ```
+2. Add the `becomap-ios` folder to your project
+3. Add as a framework dependency
+
+## Basic Implementation
+
+### Create a BCMapView
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+import UIKit
+import becomap_ios
+
+class MapViewController: UIViewController {
+    var mapView: BCMapView!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupMapView()
+    }
+
+    private func setupMapView() {
+        mapView = BCMapView()
+        mapView.delegate = self
+        view.addSubview(mapView)
+
+        // Setup constraints
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+#import <UIKit/UIKit.h>
+#import <becomap_ios/becomap_ios.h>
+
+@interface MapViewController : UIViewController <BCMapViewDelegate>
+@property (nonatomic, strong) BCMapView *mapView;
+@end
+
+@implementation MapViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self setupMapView];
+}
+
+- (void)setupMapView {
+    self.mapView = [[BCMapView alloc] init];
+    self.mapView.delegate = self;
+    [self.view addSubview:self.mapView];
+
+    // Setup constraints
+    self.mapView.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [self.mapView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [self.mapView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [self.mapView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [self.mapView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+    ]];
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+### Load the Site
+
+Use `renderSiteWith` to load your venue with the required credentials:
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+extension MapViewController: BCMapViewDelegate {
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        mapView.renderSiteWith(
+            clientId: "your_client_id",
+            clientSecret: "your_client_secret",
+            siteId: "your_site_id"
+        )
+    }
+
+    // MARK: - Required Delegate Methods
+
+    func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+        print("✅ Site loaded: \(site.siteName ?? "Unknown")")
+    }
+
+    func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+        print("❌ Error: \(payload)")
+    }
+
+    // MARK: - Optional Delegate Methods
+
+    func mapView(_ mapView: BCMapView, didLoadData success: Bool) {
+        if success {
+            let locations = mapView.getLocations()
+            let categories = mapView.getCategories()
+            print("Loaded \(locations.count) locations, \(categories.count) categories")
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self.mapView renderSiteWithClientId:@"your_client_id"
+                            clientSecret:@"your_client_secret"
+                                  siteId:@"your_site_id"];
+}
+
+#pragma mark - BCMapViewDelegate
+
+- (void)mapView:(BCMapView *)mapView didRenderSite:(BCSite *)site {
+    NSLog(@"✅ Site loaded: %@", site.siteName ?: @"Unknown");
+}
+
+- (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
+    NSLog(@"❌ Error: %@", payload);
+}
+
+- (void)mapView:(BCMapView *)mapView didLoadData:(BOOL)success {
+    if (success) {
+        NSArray<BCLocation *> *locations = [mapView getLocations];
+        NSArray<BCCategory *> *categories = [mapView getCategories];
+        NSLog(@"Loaded %lu locations, %lu categories",
+              (unsigned long)locations.count, (unsigned long)categories.count);
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Next Steps
+
+- [Using Callbacks](./using_callbacks) - Learn about delegate methods
+- [Sites](./sites) - Understanding venue data structure
+- [Locations](./locations) - Working with points of interest

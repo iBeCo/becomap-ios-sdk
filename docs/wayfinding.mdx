@@ -1,0 +1,577 @@
+---
+sidebar_position: 9
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Wayfinding
+
+The Beco iOS SDK provides a comprehensive wayfinding system that calculates optimal routes between locations within indoor venues. This guide explains how to implement route calculation, handle navigation events, and provide turn-by-turn directions to users.
+
+## Overview
+
+The wayfinding system consists of several key components:
+
+- **Route Calculation**: Calculate optimal paths between locations with waypoint support
+- **Route Delegate**: Handle route calculation results and errors
+- **Route Objects**: Structured route data with steps and navigation instructions
+- **Route Options**: Configure accessibility and routing preferences
+- **Error Handling**: Comprehensive error management for route failures
+
+## Core Components
+
+### BCMapViewDelegate Route Methods
+
+The delegate protocol provides callbacks for route calculation events:
+
+**Key Methods:**
+- `mapView(_:didReceiveRoute:)` - Called when route calculation succeeds
+- `mapView(_:didReceiveError:)` - Called when route calculation fails
+
+### BCRouteSegment
+
+Represents a complete navigation route segment between locations with ordered navigation steps.
+
+**Properties:**
+- `orderIndex` - Route segment order (for multi-segment routes)
+- `distance` - Total distance in meters
+- `steps` - Ordered list of navigation steps
+
+### BCRouteStep
+
+Individual navigation instruction within a route segment.
+
+**Properties:**
+- `orderIndex` - Step order in the route segment
+- `floorId` - Floor identifier where this step occurs
+- `instruction` - Navigation instruction text
+- `distance` - Distance for this step in meters
+
+### BCRouteOptions
+
+Configuration object for customizing route calculation behavior.
+
+**Properties:**
+- `maxDistanceThreshold` - Maximum allowed route distance
+- `getAccessiblePath` - Whether to calculate accessible routes
+- `avoidElevators` - Whether to avoid elevators in routing
+- `avoidEscalators` - Whether to avoid escalators in routing
+
+## Basic Route Calculation
+
+### Simple Route Between Two Locations
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class MapViewController: UIViewController {
+    var mapView: BCMapView!
+    var startLocation: BCLocation?
+    var endLocation: BCLocation?
+    
+    func calculateRoute() {
+        guard let start = startLocation, let end = endLocation else {
+            print("❌ Start or end location not set")
+            return
+        }
+        
+        // Create route options
+        let routeOptions = BCRouteOptions()
+        routeOptions.maxDistanceThreshold = 20
+        routeOptions.getAccessiblePath = true
+        
+        // Calculate route
+        mapView.getRoute(
+            start: start,
+            goal: end,
+            wayPoints: nil,
+            routeOptions: routeOptions
+        )
+    }
+}
+
+extension MapViewController: BCMapViewDelegate {
+    func mapView(_ mapView: BCMapView, didReceiveRoute route: [BCRouteSegment]) {
+        print("✅ Route calculated with \(route.count) segments")
+        
+        // Process route segments
+        for (index, segment) in route.enumerated() {
+            print("Segment \(index): \(segment.steps.count) steps, \(segment.distance)m")
+        }
+        
+        // Display the route on the map
+        mapView.showRoute()
+        
+        // Optionally show route on specific floor
+        if let firstStep = route.first?.steps.first {
+            mapView.showRouteOnFloor(floorId: firstStep.floorId)
+        }
+    }
+    
+    func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+        print("❌ Route calculation failed: \(payload)")
+        // Handle route calculation errors
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface MapViewController : UIViewController <BCMapViewDelegate>
+@property (nonatomic, strong) BCMapView *mapView;
+@property (nonatomic, strong) BCLocation *startLocation;
+@property (nonatomic, strong) BCLocation *endLocation;
+@end
+
+@implementation MapViewController
+
+- (void)calculateRoute {
+    if (!self.startLocation || !self.endLocation) {
+        NSLog(@"❌ Start or end location not set");
+        return;
+    }
+    
+    // Create route options
+    BCRouteOptions *routeOptions = [[BCRouteOptions alloc] init];
+    routeOptions.maxDistanceThreshold = 20;
+    routeOptions.getAccessiblePath = YES;
+    
+    // Calculate route
+    [self.mapView getRouteWithStart:self.startLocation
+                               goal:self.endLocation
+                          wayPoints:nil
+                       routeOptions:routeOptions];
+}
+
+#pragma mark - BCMapViewDelegate
+
+- (void)mapView:(BCMapView *)mapView didReceiveRoute:(NSArray<BCRouteSegment *> *)route {
+    NSLog(@"✅ Route calculated with %lu segments", (unsigned long)route.count);
+    
+    // Process route segments
+    [route enumerateObjectsUsingBlock:^(BCRouteSegment *segment, NSUInteger index, BOOL *stop) {
+        NSLog(@"Segment %lu: %lu steps, %.1fm", 
+              (unsigned long)index, 
+              (unsigned long)segment.steps.count, 
+              segment.distance);
+    }];
+    
+    // Display the route on the map
+    [mapView showRoute];
+}
+
+- (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
+    NSLog(@"❌ Route calculation failed: %@", payload);
+    // Handle route calculation errors
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+### Route with Waypoints
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func calculateRouteWithWaypoints() {
+    guard let start = startLocation, 
+          let end = endLocation,
+          !waypoints.isEmpty else {
+        print("❌ Required locations not set")
+        return
+    }
+    
+    // Create route options for accessible path
+    let routeOptions = BCRouteOptions()
+    routeOptions.getAccessiblePath = true
+    routeOptions.maxDistanceThreshold = 50
+    
+    // Calculate route with waypoints
+    mapView.getRoute(
+        start: start,
+        goal: end,
+        wayPoints: waypoints,
+        routeOptions: routeOptions
+    )
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)calculateRouteWithWaypoints {
+    if (!self.startLocation || !self.endLocation || self.waypoints.count == 0) {
+        NSLog(@"❌ Required locations not set");
+        return;
+    }
+    
+    // Create route options for accessible path
+    BCRouteOptions *routeOptions = [[BCRouteOptions alloc] init];
+    routeOptions.getAccessiblePath = YES;
+    routeOptions.maxDistanceThreshold = 50;
+    
+    // Calculate route with waypoints
+    [self.mapView getRouteWithStart:self.startLocation
+                               goal:self.endLocation
+                          wayPoints:self.waypoints
+                       routeOptions:routeOptions];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Advanced Route Management
+
+### Route Segment Display
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func showSpecificRouteSegment(_ orderIndex: Int) {
+    // Show specific route segment
+    mapView.showRoute(segmentOrderIndex: orderIndex)
+}
+
+func showRouteStep(_ stepIndex: Int) {
+    // Show specific step in the route
+    mapView.showStep(step: stepIndex)
+}
+
+func clearAllRoutes() {
+    // Clear all route visualizations
+    mapView.clearAllRoute()
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)showSpecificRouteSegment:(NSInteger)orderIndex {
+    // Show specific route segment
+    [self.mapView showRouteWithSegmentOrderIndex:orderIndex];
+}
+
+- (void)showRouteStep:(NSInteger)stepIndex {
+    // Show specific step in the route
+    [self.mapView showStepWithStep:stepIndex];
+}
+
+- (void)clearAllRoutes {
+    // Clear all route visualizations
+    [self.mapView clearAllRoute];
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Route Analysis
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func analyzeRoute(_ route: [BCRouteSegment]) {
+    // Calculate total distance
+    let totalDistance = route.reduce(0) { $0 + $1.distance }
+    print("Total route distance: \(totalDistance) meters")
+    
+    // Count total steps
+    let totalSteps = route.reduce(0) { $0 + $1.steps.count }
+    print("Total navigation steps: \(totalSteps)")
+    
+    // Extract unique floors
+    var floorIds: Set<String> = []
+    for segment in route {
+        for step in segment.steps {
+            floorIds.insert(step.floorId)
+        }
+    }
+    print("Route spans \(floorIds.count) floors: \(Array(floorIds))")
+    
+    // Find floor transitions
+    var transitions: [(from: String, to: String)] = []
+    for segment in route {
+        for i in 0..<segment.steps.count - 1 {
+            let currentFloor = segment.steps[i].floorId
+            let nextFloor = segment.steps[i + 1].floorId
+            if currentFloor != nextFloor {
+                transitions.append((from: currentFloor, to: nextFloor))
+            }
+        }
+    }
+    print("Floor transitions: \(transitions.count)")
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)analyzeRoute:(NSArray<BCRouteSegment *> *)route {
+    // Calculate total distance
+    double totalDistance = 0;
+    for (BCRouteSegment *segment in route) {
+        totalDistance += segment.distance;
+    }
+    NSLog(@"Total route distance: %.1f meters", totalDistance);
+    
+    // Count total steps
+    NSInteger totalSteps = 0;
+    for (BCRouteSegment *segment in route) {
+        totalSteps += segment.steps.count;
+    }
+    NSLog(@"Total navigation steps: %ld", (long)totalSteps);
+    
+    // Extract unique floors
+    NSMutableSet<NSString *> *floorIds = [NSMutableSet set];
+    for (BCRouteSegment *segment in route) {
+        for (BCRouteStep *step in segment.steps) {
+            [floorIds addObject:step.floorId];
+        }
+    }
+    NSLog(@"Route spans %lu floors: %@", 
+          (unsigned long)floorIds.count, 
+          floorIds.allObjects);
+    
+    // Find floor transitions
+    NSMutableArray *transitions = [NSMutableArray array];
+    for (BCRouteSegment *segment in route) {
+        for (NSInteger i = 0; i < segment.steps.count - 1; i++) {
+            NSString *currentFloor = segment.steps[i].floorId;
+            NSString *nextFloor = segment.steps[i + 1].floorId;
+            if (![currentFloor isEqualToString:nextFloor]) {
+                [transitions addObject:@{@"from": currentFloor, @"to": nextFloor}];
+            }
+        }
+    }
+    NSLog(@"Floor transitions: %lu", (unsigned long)transitions.count);
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Error Handling
+
+### Route Calculation Errors
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+    guard let errorDict = payload as? [String: Any],
+          let operation = errorDict["operation"] as? String else {
+        print("❌ Unknown error: \(payload)")
+        return
+    }
+    
+    switch operation {
+    case "getRoute":
+        handleRouteError(errorDict)
+    case "showRoute":
+        handleRouteDisplayError(errorDict)
+    case "showRouteOnFloor":
+        handleFloorRouteError(errorDict)
+    default:
+        print("❌ Unhandled operation error: \(operation)")
+    }
+}
+
+private func handleRouteError(_ errorDict: [String: Any]) {
+    let message = errorDict["message"] as? String ?? "Unknown route error"
+    print("❌ Route calculation failed: \(message)")
+    
+    // Show user-friendly error message
+    showAlert(title: "Route Not Found", 
+              message: "Unable to calculate route between selected locations. Please try different locations.")
+    
+    // Clear any existing route display
+    mapView.clearAllRoute()
+}
+
+private func handleRouteDisplayError(_ errorDict: [String: Any]) {
+    let message = errorDict["message"] as? String ?? "Unknown display error"
+    print("❌ Route display failed: \(message)")
+    
+    // Retry route display
+    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        self.mapView.showRoute()
+    }
+}
+
+private func handleFloorRouteError(_ errorDict: [String: Any]) {
+    let message = errorDict["message"] as? String ?? "Unknown floor route error"
+    print("❌ Floor route display failed: \(message)")
+    
+    // Fall back to regular route display
+    mapView.showRoute()
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
+    NSDictionary *errorDict = nil;
+    if ([payload isKindOfClass:[NSDictionary class]]) {
+        errorDict = (NSDictionary *)payload;
+    } else {
+        NSLog(@"❌ Unknown error: %@", payload);
+        return;
+    }
+    
+    NSString *operation = errorDict[@"operation"];
+    if (!operation) {
+        NSLog(@"❌ Error without operation: %@", payload);
+        return;
+    }
+    
+    if ([operation isEqualToString:@"getRoute"]) {
+        [self handleRouteError:errorDict];
+    } else if ([operation isEqualToString:@"showRoute"]) {
+        [self handleRouteDisplayError:errorDict];
+    } else if ([operation isEqualToString:@"showRouteOnFloor"]) {
+        [self handleFloorRouteError:errorDict];
+    } else {
+        NSLog(@"❌ Unhandled operation error: %@", operation);
+    }
+}
+
+- (void)handleRouteError:(NSDictionary *)errorDict {
+    NSString *message = errorDict[@"message"] ?: @"Unknown route error";
+    NSLog(@"❌ Route calculation failed: %@", message);
+    
+    // Show user-friendly error message
+    [self showAlertWithTitle:@"Route Not Found" 
+                     message:@"Unable to calculate route between selected locations. Please try different locations."];
+    
+    // Clear any existing route display
+    [self.mapView clearAllRoute];
+}
+
+- (void)handleRouteDisplayError:(NSDictionary *)errorDict {
+    NSString *message = errorDict[@"message"] ?: @"Unknown display error";
+    NSLog(@"❌ Route display failed: %@", message);
+    
+    // Retry route display
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.mapView showRoute];
+    });
+}
+
+- (void)handleFloorRouteError:(NSDictionary *)errorDict {
+    NSString *message = errorDict[@"message"] ?: @"Unknown floor route error";
+    NSLog(@"❌ Floor route display failed: %@", message);
+    
+    // Fall back to regular route display
+    [self.mapView showRoute];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+### Route Validation
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func validateRouteRequest(start: BCLocation, goal: BCLocation, wayPoints: [BCLocation]?) -> Bool {
+    // Validate start location
+    guard let startId = start.id, !startId.isEmpty else {
+        print("❌ Start location missing ID")
+        return false
+    }
+    
+    // Validate goal location
+    guard let goalId = goal.id, !goalId.isEmpty else {
+        print("❌ Goal location missing ID")
+        return false
+    }
+    
+    // Validate waypoints if provided
+    if let wayPoints = wayPoints {
+        for waypoint in wayPoints {
+            guard let waypointId = waypoint.id, !waypointId.isEmpty else {
+                print("❌ Waypoint missing ID")
+                return false
+            }
+        }
+    }
+    
+    // Check if start and goal are the same
+    if start.id == goal.id {
+        print("❌ Start and goal locations are the same")
+        return false
+    }
+    
+    return true
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (BOOL)validateRouteRequestWithStart:(BCLocation *)start 
+                                 goal:(BCLocation *)goal 
+                            wayPoints:(NSArray<BCLocation *> *)wayPoints {
+    // Validate start location
+    if (!start.id || start.id.length == 0) {
+        NSLog(@"❌ Start location missing ID");
+        return NO;
+    }
+    
+    // Validate goal location
+    if (!goal.id || goal.id.length == 0) {
+        NSLog(@"❌ Goal location missing ID");
+        return NO;
+    }
+    
+    // Validate waypoints if provided
+    if (wayPoints) {
+        for (BCLocation *waypoint in wayPoints) {
+            if (!waypoint.id || waypoint.id.length == 0) {
+                NSLog(@"❌ Waypoint missing ID");
+                return NO;
+            }
+        }
+    }
+    
+    // Check if start and goal are the same
+    if ([start.id isEqualToString:goal.id]) {
+        NSLog(@"❌ Start and goal locations are the same");
+        return NO;
+    }
+    
+    return YES;
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Related Topics
+
+- [Locations](./locations) - Working with location objects for routing
+- [Building Floor Selection](./building-floor-selection) - Managing floor transitions in routes
+- [Interactivity](./interactivity) - Handling user interactions with routes
+- [Error Handling](./error-handling) - Comprehensive error management for routing

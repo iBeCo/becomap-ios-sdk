@@ -1,0 +1,431 @@
+---
+sidebar_position: 3
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Using Callbacks
+
+The Beco iOS SDK uses delegate protocols to notify your application about map events, data loading, and user interactions. This guide explains the main delegate methods and their usage.
+
+## BCMapViewDelegate
+
+The primary delegate protocol for map events and lifecycle callbacks.
+
+### Required Methods
+
+#### mapView(_:didRenderSite:)
+Called when the map has successfully rendered and site data is available. This is the primary success callback indicating that the map is ready for use.
+
+#### mapView(_:didReceiveError:)
+Called when map initialization fails or errors occur during operation. Provides error information for different failure scenarios like authentication errors, network issues, or invalid configuration.
+
+### Optional Methods
+
+#### mapView(_:didLoadData:)
+Called when categories and locations data has been loaded and cached. After this callback with `success: true`, you can safely access `getCategories()`, `getLocations()`, and `getAmenityLocations()`.
+
+#### mapView(_:didChangeView:)
+Called when the map view changes (zoom, pan, etc.). Provides view change data.
+
+#### mapView(_:didSelectLocation:)
+Called when the user selects a location on the map. Provides the selected location object for further processing.
+
+#### mapView(_:didSwitchFloor:)
+Called when the user navigates to a different floor, either through UI controls or programmatic floor selection.
+
+#### mapView(_:didLoadStep:)
+Called when a route step is loaded. Provides step data for navigation.
+
+#### mapViewDidEndWalkthrough(_:)
+Called when route walkthrough ends.
+
+#### mapView(_:didReceiveCurrentFloor:)
+Called when the current visible floor is determined or updated.
+
+#### mapView(_:didReceiveRoute:)
+Called when route calculation completes successfully. Provides an array of route segments for navigation.
+
+#### mapView(_:didReceiveSearchResults:)
+Called when location search completes. Provides an array of matching locations.
+
+#### mapView(_:didReceiveSearchCategories:)
+Called when category search results are received.
+
+## Implementation Example
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class MapViewController: UIViewController {
+    var mapView: BCMapView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        mapView = BCMapView()
+        mapView.delegate = self
+        view.addSubview(mapView)
+    }
+}
+
+extension MapViewController: BCMapViewDelegate {
+    // MARK: - Required Methods
+    
+    func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+        // Map is ready, enable UI controls
+        print("✅ Site loaded: \(site.siteName ?? "Unknown")")
+        enableMapFeatures()
+    }
+    
+    func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+        // Handle initialization or operation errors
+        print("❌ Error occurred: \(payload)")
+        handleMapError(payload)
+    }
+    
+    // MARK: - Optional Methods
+    
+    func mapView(_ mapView: BCMapView, didLoadData success: Bool) {
+        if success {
+            print("✅ Data loaded successfully")
+            setupLocationFeatures()
+        } else {
+            print("❌ Data loading failed")
+            showDataLoadingError()
+        }
+    }
+    
+    func mapView(_ mapView: BCMapView, didSelectLocation location: BCLocation) {
+        print("📍 Location selected: \(location.name ?? "Unknown")")
+        showLocationDetails(location)
+    }
+    
+    func mapView(_ mapView: BCMapView, didSwitchFloor floor: BCMapFloor) {
+        print("🏢 Floor changed to: \(floor.name ?? "Unknown")")
+        updateFloorIndicator(floor)
+    }
+    
+    func mapView(_ mapView: BCMapView, didReceiveRoute route: [BCRouteSegment]) {
+        print("🗺️ Route calculated with \(route.count) segments")
+        displayRoute(route)
+    }
+    
+    func mapView(_ mapView: BCMapView, didReceiveSearchResults results: [BCLocation]) {
+        print("🔍 Search returned \(results.count) results")
+        updateSearchResults(results)
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface MapViewController : UIViewController <BCMapViewDelegate>
+@property (nonatomic, strong) BCMapView *mapView;
+@end
+
+@implementation MapViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.mapView = [[BCMapView alloc] init];
+    self.mapView.delegate = self;
+    [self.view addSubview:self.mapView];
+}
+
+#pragma mark - BCMapViewDelegate Required Methods
+
+- (void)mapView:(BCMapView *)mapView didRenderSite:(BCSite *)site {
+    // Map is ready, enable UI controls
+    NSLog(@"✅ Site loaded: %@", site.siteName ?: @"Unknown");
+    [self enableMapFeatures];
+}
+
+- (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
+    // Handle initialization or operation errors
+    NSLog(@"❌ Error occurred: %@", payload);
+    [self handleMapError:payload];
+}
+
+#pragma mark - BCMapViewDelegate Optional Methods
+
+- (void)mapView:(BCMapView *)mapView didLoadData:(BOOL)success {
+    if (success) {
+        NSLog(@"✅ Data loaded successfully");
+        [self setupLocationFeatures];
+    } else {
+        NSLog(@"❌ Data loading failed");
+        [self showDataLoadingError];
+    }
+}
+
+- (void)mapView:(BCMapView *)mapView didSelectLocation:(BCLocation *)location {
+    NSLog(@"📍 Location selected: %@", location.name ?: @"Unknown");
+    [self showLocationDetails:location];
+}
+
+- (void)mapView:(BCMapView *)mapView didSwitchFloor:(BCMapFloor *)floor {
+    NSLog(@"🏢 Floor changed to: %@", floor.name ?: @"Unknown");
+    [self updateFloorIndicator:floor];
+}
+
+- (void)mapView:(BCMapView *)mapView didReceiveRoute:(NSArray<BCRouteSegment *> *)route {
+    NSLog(@"🗺️ Route calculated with %lu segments", (unsigned long)route.count);
+    [self displayRoute:route];
+}
+
+- (void)mapView:(BCMapView *)mapView didReceiveSearchResults:(NSArray<BCLocation *> *)results {
+    NSLog(@"🔍 Search returned %lu results", (unsigned long)results.count);
+    [self updateSearchResults:results];
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Callback Patterns
+
+### Initialization Flow
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class MapViewController: UIViewController {
+    private var isMapReady = false
+    private var isDataLoaded = false
+    
+    func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+        isMapReady = true
+        print("Map rendered for site: \(site.siteName ?? "Unknown")")
+        
+        // Enable basic map interactions
+        enableBasicMapFeatures()
+        
+        // Check if we can enable data-dependent features
+        checkReadyState()
+    }
+    
+    func mapView(_ mapView: BCMapView, didLoadData success: Bool) {
+        isDataLoaded = success
+        
+        if success {
+            print("Data loaded successfully")
+        } else {
+            print("Data loading failed")
+            showDataError()
+        }
+        
+        // Check if we can enable data-dependent features
+        checkReadyState()
+    }
+    
+    private func checkReadyState() {
+        if isMapReady && isDataLoaded {
+            // Both map and data are ready
+            enableAllFeatures()
+        }
+    }
+    
+    private func enableAllFeatures() {
+        // Enable location search
+        searchButton.isEnabled = true
+        
+        // Enable location directory
+        directoryButton.isEnabled = true
+        
+        // Enable route planning
+        routeButton.isEnabled = true
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface MapViewController ()
+@property (nonatomic, assign) BOOL isMapReady;
+@property (nonatomic, assign) BOOL isDataLoaded;
+@end
+
+@implementation MapViewController
+
+- (void)mapView:(BCMapView *)mapView didRenderSite:(BCSite *)site {
+    self.isMapReady = YES;
+    NSLog(@"Map rendered for site: %@", site.siteName ?: @"Unknown");
+    
+    // Enable basic map interactions
+    [self enableBasicMapFeatures];
+    
+    // Check if we can enable data-dependent features
+    [self checkReadyState];
+}
+
+- (void)mapView:(BCMapView *)mapView didLoadData:(BOOL)success {
+    self.isDataLoaded = success;
+    
+    if (success) {
+        NSLog(@"Data loaded successfully");
+    } else {
+        NSLog(@"Data loading failed");
+        [self showDataError];
+    }
+    
+    // Check if we can enable data-dependent features
+    [self checkReadyState];
+}
+
+- (void)checkReadyState {
+    if (self.isMapReady && self.isDataLoaded) {
+        // Both map and data are ready
+        [self enableAllFeatures];
+    }
+}
+
+- (void)enableAllFeatures {
+    // Enable location search
+    self.searchButton.enabled = YES;
+    
+    // Enable location directory
+    self.directoryButton.enabled = YES;
+    
+    // Enable route planning
+    self.routeButton.enabled = YES;
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+### Error Handling Pattern
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+    // Parse error information
+    if let errorDict = payload as? [String: Any] {
+        let operation = errorDict["operation"] as? String ?? "unknown"
+        let message = errorDict["message"] as? String ?? "Unknown error"
+        
+        handleSpecificError(operation: operation, message: message)
+    } else {
+        handleGenericError(payload)
+    }
+}
+
+private func handleSpecificError(operation: String, message: String) {
+    switch operation {
+    case "init":
+        showInitializationError(message)
+    case "getRoute":
+        showRouteError(message)
+    case "searchForLocation":
+        showSearchError(message)
+    default:
+        showGenericError(message)
+    }
+}
+
+private func showInitializationError(_ message: String) {
+    let alert = UIAlertController(
+        title: "Map Loading Failed",
+        message: "Unable to load the map: \(message)",
+        preferredStyle: .alert
+    )
+    
+    alert.addAction(UIAlertAction(title: "Retry", style: .default) { _ in
+        self.retryMapInitialization()
+    })
+    
+    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+    
+    present(alert, animated: true)
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
+    // Parse error information
+    if ([payload isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *errorDict = (NSDictionary *)payload;
+        NSString *operation = errorDict[@"operation"] ?: @"unknown";
+        NSString *message = errorDict[@"message"] ?: @"Unknown error";
+        
+        [self handleSpecificErrorWithOperation:operation message:message];
+    } else {
+        [self handleGenericError:payload];
+    }
+}
+
+- (void)handleSpecificErrorWithOperation:(NSString *)operation message:(NSString *)message {
+    if ([operation isEqualToString:@"init"]) {
+        [self showInitializationError:message];
+    } else if ([operation isEqualToString:@"getRoute"]) {
+        [self showRouteError:message];
+    } else if ([operation isEqualToString:@"searchForLocation"]) {
+        [self showSearchError:message];
+    } else {
+        [self showGenericError:message];
+    }
+}
+
+- (void)showInitializationError:(NSString *)message {
+    UIAlertController *alert = [UIAlertController 
+        alertControllerWithTitle:@"Map Loading Failed"
+        message:[NSString stringWithFormat:@"Unable to load the map: %@", message]
+        preferredStyle:UIAlertControllerStyleAlert];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Retry" 
+                                              style:UIAlertActionStyleDefault 
+                                            handler:^(UIAlertAction *action) {
+        [self retryMapInitialization];
+    }]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" 
+                                              style:UIAlertActionStyleCancel 
+                                            handler:nil]];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+### Delegate Management
+
+- **Set delegate early**: Assign the delegate before calling `renderSiteWith`
+- **Handle all required methods**: Implement both success and error callbacks
+- **Use weak references**: Avoid retain cycles in delegate implementations
+- **Clear delegate**: Set delegate to `nil` when deallocating
+
+### State Management
+
+- **Track initialization state**: Monitor both map and data loading completion
+- **Enable features progressively**: Only enable UI elements when data is available
+- **Handle partial failures**: Gracefully degrade functionality when some data fails to load
+- **Provide user feedback**: Show loading states and error messages appropriately
+
+### Error Recovery
+
+- **Implement retry logic**: Allow users to retry failed operations
+- **Provide fallback options**: Offer alternative functionality when primary features fail
+- **Log errors appropriately**: Capture error details for debugging and analytics
+- **Test error scenarios**: Verify error handling with network failures and invalid data

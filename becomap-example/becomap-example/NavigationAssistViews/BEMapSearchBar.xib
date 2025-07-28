@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BEMapSearchBar" customModule="beCoDevelop" customModuleProvider="target">
+            <connections>
+                <outlet property="contentView" destination="iN0-l3-epB" id="zUL-Xt-Kcb"/>
+                <outlet property="leftButton" destination="L8o-bc-Wg6" id="3IL-KU-ZRh"/>
+                <outlet property="navButton" destination="hH1-rd-oZt" id="u0E-gi-Eqc"/>
+                <outlet property="searchBarView" destination="CPk-PW-Lqd" id="YtP-xb-hcn"/>
+                <outlet property="searchField" destination="fax-fh-4cE" id="PbQ-Tx-SHW"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clipsSubviews="YES" contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="506" height="132"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CPk-PW-Lqd" customClass="BEShadowView" customModule="beCoDevelop" customModuleProvider="target">
+                    <rect key="frame" x="16" y="42" width="474" height="40"/>
+                    <subviews>
+                        <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Where to go?" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="fax-fh-4cE">
+                            <rect key="frame" x="37" y="9" width="392.5" height="23"/>
+                            <color key="textColor" name="BEBlack"/>
+                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="13"/>
+                            <textInputTraits key="textInputTraits"/>
+                            <connections>
+                                <action selector="textFieldDidChange:" destination="-1" eventType="editingChanged" id="udi-BP-UYI"/>
+                                <outlet property="delegate" destination="-1" id="IVK-GX-zqt"/>
+                            </connections>
+                        </textField>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L8o-bc-Wg6">
+                            <rect key="frame" x="0.0" y="0.0" width="37" height="40"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="37" id="vKD-dw-FL8"/>
+                            </constraints>
+                            <state key="normal" image="ico_be_search_icon"/>
+                            <connections>
+                                <action selector="leftButtonTapped:" destination="-1" eventType="touchUpInside" id="hrG-UX-8yG"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hH1-rd-oZt">
+                            <rect key="frame" x="437.5" y="5" width="30" height="30"/>
+                            <color key="backgroundColor" name="BEThemaBlue"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="30" id="faJ-bH-f6R"/>
+                            </constraints>
+                            <state key="normal" image="ico_be_right_arrow"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="borderRadius">
+                                    <real key="value" value="15"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="navButtonTapped:" destination="-1" eventType="touchUpInside" id="qUn-oH-n7T"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="hH1-rd-oZt" secondAttribute="trailing" constant="6.5" id="980-6t-eRB"/>
+                        <constraint firstItem="fax-fh-4cE" firstAttribute="leading" secondItem="CPk-PW-Lqd" secondAttribute="leading" constant="37" id="AAl-wM-21x"/>
+                        <constraint firstAttribute="bottom" secondItem="fax-fh-4cE" secondAttribute="bottom" constant="8" id="Pde-tx-DOc"/>
+                        <constraint firstItem="L8o-bc-Wg6" firstAttribute="leading" secondItem="CPk-PW-Lqd" secondAttribute="leading" id="Puv-mh-jcI"/>
+                        <constraint firstAttribute="bottom" secondItem="hH1-rd-oZt" secondAttribute="bottom" constant="5" id="ZT1-FC-aDN"/>
+                        <constraint firstAttribute="height" constant="40" id="ax2-R3-fcH"/>
+                        <constraint firstItem="L8o-bc-Wg6" firstAttribute="top" secondItem="CPk-PW-Lqd" secondAttribute="top" id="fOe-af-RrG"/>
+                        <constraint firstItem="hH1-rd-oZt" firstAttribute="leading" secondItem="fax-fh-4cE" secondAttribute="trailing" constant="8" id="oGW-oa-god"/>
+                        <constraint firstItem="hH1-rd-oZt" firstAttribute="top" secondItem="CPk-PW-Lqd" secondAttribute="top" constant="5" id="pOu-Ww-O2f"/>
+                        <constraint firstAttribute="bottom" secondItem="L8o-bc-Wg6" secondAttribute="bottom" id="tHS-8b-VXG"/>
+                        <constraint firstItem="fax-fh-4cE" firstAttribute="top" secondItem="CPk-PW-Lqd" secondAttribute="top" constant="9" id="wci-zP-hWu"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="borderWidth">
+                            <real key="value" value="1"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
+                            <color key="value" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="20"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="CPk-PW-Lqd" secondAttribute="bottom" constant="16" id="3M4-pr-UxQ"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="CPk-PW-Lqd" secondAttribute="trailing" constant="16" id="kdh-GY-kEq"/>
+                <constraint firstItem="CPk-PW-Lqd" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="rRb-5r-Xab"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <point key="canvasLocation" x="149.27536231884059" y="-89.732142857142847"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="ico_be_right_arrow" width="10" height="13.5"/>
+        <image name="ico_be_search_icon" width="20" height="20"/>
+        <namedColor name="BEBlack">
+            <color red="0.035000000149011612" green="0.039000000804662704" blue="0.097999997437000275" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="BEThemaBlue">
+            <color red="0.11400000005960464" green="0.63099998235702515" blue="0.94900000095367432" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

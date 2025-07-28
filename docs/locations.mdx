@@ -1,0 +1,656 @@
+---
+sidebar_position: 7
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Locations
+
+Locations represent points of interest (POIs) within a venue, such as stores, restaurants, amenities, and services. This guide explains how to work with BCLocation objects, search for locations, and handle location-based interactions.
+
+## Overview
+
+The BCLocation class provides comprehensive information about points of interest within a venue, including:
+
+- **Identity Information**: Unique identifiers and names
+- **Classification**: Types, categories, and amenities
+- **Contact Details**: Phone numbers, social media, and websites
+- **Operational Data**: Operating hours and availability
+- **Visual Assets**: Logos, banners, and promotional images
+- **Spatial Data**: Floor associations and geographic coordinates
+
+## BCLocation Properties
+
+### Core Identity
+- `id` - Unique identifier for the location
+- `externalId` - External system identifier
+- `name` - Display name of the location
+- `locationDescription` - Detailed description
+
+### Classification
+- `type` - BCLocationType enum (tenant, amenities, parking, etc.)
+- `amenity` - Specific amenity type string
+- `categories` - Array of BCCategory objects
+- `tags` - Array of descriptive tags
+
+### Contact Information
+- `phone` - Dictionary of phone numbers by type
+- `social` - Dictionary of social media links
+- `links` - Array of BCLink objects (websites, etc.)
+
+### Operational Data
+- `operationHours` - Array of BCOperationHour objects
+- `topLocation` - Whether this is a featured location
+- `sortOrder` - Display order priority
+
+### Visual Assets
+- `banner` - Banner image URL
+- `logo` - Logo image URL
+- `showLogo` - Whether to display the logo
+
+### Spatial Data
+- `floor` - Associated BCMapFloor object
+- `floorId` - Floor identifier string
+
+## Accessing Location Data
+
+### Using Cached Data (Recommended)
+
+The SDK provides high-performance cached access to location data after the site is loaded:
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func mapView(_ mapView: BCMapView, didLoadData success: Bool) {
+    guard success else {
+        print("❌ Data loading failed")
+        return
+    }
+    
+    // Get all locations synchronously from cache
+    let allLocations = mapView.getLocations()
+    print("✅ Loaded \(allLocations.count) locations")
+    
+    // Filter locations by type
+    let tenants = allLocations.filter { $0.type == .tenant }
+    let amenities = allLocations.filter { $0.type == .amenities }
+    let parking = allLocations.filter { $0.type == .parking }
+    
+    print("Tenants: \(tenants.count)")
+    print("Amenities: \(amenities.count)")
+    print("Parking: \(parking.count)")
+    
+    // Get amenity locations specifically
+    let amenityLocations = mapView.getAmenityLocations()
+    print("Amenity locations: \(amenityLocations.count)")
+    
+    // Update UI with location data
+    updateLocationList(allLocations)
+}
+
+private func updateLocationList(_ locations: [BCLocation]) {
+    // Sort locations by name
+    let sortedLocations = locations.sorted { 
+        ($0.name ?? "").localizedCaseInsensitiveCompare($1.name ?? "") == .orderedAscending
+    }
+    
+    // Update table view or collection view
+    self.locations = sortedLocations
+    DispatchQueue.main.async {
+        self.tableView.reloadData()
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)mapView:(BCMapView *)mapView didLoadData:(BOOL)success {
+    if (!success) {
+        NSLog(@"❌ Data loading failed");
+        return;
+    }
+    
+    // Get all locations synchronously from cache
+    NSArray<BCLocation *> *allLocations = [mapView getLocations];
+    NSLog(@"✅ Loaded %lu locations", (unsigned long)allLocations.count);
+    
+    // Filter locations by type
+    NSPredicate *tenantPredicate = [NSPredicate predicateWithBlock:^BOOL(BCLocation *location, NSDictionary *bindings) {
+        return location.type == BCLocationTypeTenant;
+    }];
+    NSArray *tenants = [allLocations filteredArrayUsingPredicate:tenantPredicate];
+    
+    NSPredicate *amenityPredicate = [NSPredicate predicateWithBlock:^BOOL(BCLocation *location, NSDictionary *bindings) {
+        return location.type == BCLocationTypeAmenities;
+    }];
+    NSArray *amenities = [allLocations filteredArrayUsingPredicate:amenityPredicate];
+    
+    NSLog(@"Tenants: %lu", (unsigned long)tenants.count);
+    NSLog(@"Amenities: %lu", (unsigned long)amenities.count);
+    
+    // Get amenity locations specifically
+    NSArray<BCLocation *> *amenityLocations = [mapView getAmenityLocations];
+    NSLog(@"Amenity locations: %lu", (unsigned long)amenityLocations.count);
+    
+    // Update UI with location data
+    [self updateLocationList:allLocations];
+}
+
+- (void)updateLocationList:(NSArray<BCLocation *> *)locations {
+    // Sort locations by name
+    NSArray *sortedLocations = [locations sortedArrayUsingComparator:^NSComparisonResult(BCLocation *obj1, BCLocation *obj2) {
+        NSString *name1 = obj1.name ?: @"";
+        NSString *name2 = obj2.name ?: @"";
+        return [name1 localizedCaseInsensitiveCompare:name2];
+    }];
+    
+    // Update table view or collection view
+    self.locations = sortedLocations;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.tableView reloadData];
+    });
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Location Search
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func searchForLocation(_ searchText: String) {
+    guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        return
+    }
+
+    // Trigger search
+    mapView.searchForLocation(searchString: searchText)
+}
+
+func mapView(_ mapView: BCMapView, didReceiveSearchResults results: [BCLocation]) {
+    print("🔍 Search returned \(results.count) results")
+
+    // Update search results UI
+    updateSearchResults(results)
+
+    // Optionally select first result
+    if let firstResult = results.first {
+        mapView.selectLocation(location: firstResult)
+    }
+}
+
+private func updateSearchResults(_ results: [BCLocation]) {
+    self.searchResults = results
+    DispatchQueue.main.async {
+        self.searchTableView.reloadData()
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)searchForLocation:(NSString *)searchText {
+    NSString *trimmedText = [searchText stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (trimmedText.length == 0) {
+        return;
+    }
+
+    // Trigger search
+    [self.mapView searchForLocationWithSearchString:searchText];
+}
+
+- (void)mapView:(BCMapView *)mapView didReceiveSearchResults:(NSArray<BCLocation *> *)results {
+    NSLog(@"🔍 Search returned %lu results", (unsigned long)results.count);
+
+    // Update search results UI
+    [self updateSearchResults:results];
+
+    // Optionally select first result
+    if (results.count > 0) {
+        [self.mapView selectLocation:results.firstObject];
+    }
+}
+
+- (void)updateSearchResults:(NSArray<BCLocation *> *)results {
+    self.searchResults = results;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.searchTableView reloadData];
+    });
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Location Selection and Interaction
+
+### Selecting Locations
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func selectLocation(_ location: BCLocation) {
+    // Select location on map
+    mapView.selectLocation(location: location)
+    
+    // Switch to location's floor if needed
+    if let floor = location.floor {
+        mapView.selectFloor(floor: floor)
+    }
+    
+    // Focus camera on location
+    mapView.focusTo(location: location, zoomLevel: 18.0, bearing: nil, pitch: nil)
+}
+
+func mapView(_ mapView: BCMapView, didSelectLocation location: BCLocation) {
+    print("📍 Location selected: \(location.name ?? "Unknown")")
+    
+    // Update UI to show location details
+    showLocationDetails(location)
+    
+    // Store selected location for routing
+    self.selectedLocation = location
+}
+
+private func showLocationDetails(_ location: BCLocation) {
+    // Create and show location detail view
+    let detailVC = LocationDetailViewController()
+    detailVC.location = location
+    
+    if let sheet = detailVC.sheetPresentationController {
+        sheet.detents = [.medium(), .large()]
+        sheet.prefersGrabberVisible = true
+    }
+    
+    present(detailVC, animated: true)
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)selectLocation:(BCLocation *)location {
+    // Select location on map
+    [self.mapView selectLocation:location];
+    
+    // Switch to location's floor if needed
+    if (location.floor) {
+        [self.mapView selectFloor:location.floor];
+    }
+    
+    // Focus camera on location
+    [self.mapView focusToWithLocation:location 
+                            zoomLevel:@18.0 
+                              bearing:nil 
+                                pitch:nil];
+}
+
+- (void)mapView:(BCMapView *)mapView didSelectLocation:(BCLocation *)location {
+    NSLog(@"📍 Location selected: %@", location.name ?: @"Unknown");
+    
+    // Update UI to show location details
+    [self showLocationDetails:location];
+    
+    // Store selected location for routing
+    self.selectedLocation = location;
+}
+
+- (void)showLocationDetails:(BCLocation *)location {
+    // Create and show location detail view
+    LocationDetailViewController *detailVC = [[LocationDetailViewController alloc] init];
+    detailVC.location = location;
+    
+    [self presentViewController:detailVC animated:YES completion:nil];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Working with Location Categories
+
+### Filtering by Categories
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func filterLocationsByCategory() {
+    // Get all categories
+    let categories = mapView.getCategories()
+    print("Available categories: \(categories.count)")
+    
+    // Get all locations
+    let locations = mapView.getLocations()
+    
+    // Filter locations by specific category
+    if let restaurantCategory = categories.first(where: { $0.name?.lowercased().contains("restaurant") == true }) {
+        let restaurants = locations.filter { location in
+            return location.categories?.contains { $0.id == restaurantCategory.id } == true
+        }
+        print("Found \(restaurants.count) restaurants")
+        
+        // Display restaurants in UI
+        displayFilteredLocations(restaurants, title: "Restaurants")
+    }
+    
+    // Filter by location type
+    let amenityLocations = locations.filter { $0.type == .amenities }
+    print("Found \(amenityLocations.count) amenities")
+}
+
+private func displayFilteredLocations(_ locations: [BCLocation], title: String) {
+    // Update UI with filtered locations
+    self.filteredLocations = locations
+    self.navigationItem.title = title
+    
+    DispatchQueue.main.async {
+        self.tableView.reloadData()
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (void)filterLocationsByCategory {
+    // Get all categories
+    NSArray<BCCategory *> *categories = [self.mapView getCategories];
+    NSLog(@"Available categories: %lu", (unsigned long)categories.count);
+    
+    // Get all locations
+    NSArray<BCLocation *> *locations = [self.mapView getLocations];
+    
+    // Filter locations by specific category
+    BCCategory *restaurantCategory = nil;
+    for (BCCategory *category in categories) {
+        if ([category.name.lowercaseString containsString:@"restaurant"]) {
+            restaurantCategory = category;
+            break;
+        }
+    }
+    
+    if (restaurantCategory) {
+        NSMutableArray *restaurants = [NSMutableArray array];
+        for (BCLocation *location in locations) {
+            if (location.categories) {
+                for (BCCategory *category in location.categories) {
+                    if ([category.id isEqualToString:restaurantCategory.id]) {
+                        [restaurants addObject:location];
+                        break;
+                    }
+                }
+            }
+        }
+        NSLog(@"Found %lu restaurants", (unsigned long)restaurants.count);
+        
+        // Display restaurants in UI
+        [self displayFilteredLocations:restaurants title:@"Restaurants"];
+    }
+    
+    // Filter by location type
+    NSPredicate *amenityPredicate = [NSPredicate predicateWithBlock:^BOOL(BCLocation *location, NSDictionary *bindings) {
+        return location.type == BCLocationTypeAmenities;
+    }];
+    NSArray *amenityLocations = [locations filteredArrayUsingPredicate:amenityPredicate];
+    NSLog(@"Found %lu amenities", (unsigned long)amenityLocations.count);
+}
+
+- (void)displayFilteredLocations:(NSArray<BCLocation *> *)locations title:(NSString *)title {
+    // Update UI with filtered locations
+    self.filteredLocations = locations;
+    self.navigationItem.title = title;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.tableView reloadData];
+    });
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Location Data Validation
+
+### Validating Location Objects
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+func validateLocation(_ location: BCLocation) -> Bool {
+    // Check essential properties
+    guard let locationId = location.id, !locationId.isEmpty else {
+        print("❌ Location missing ID")
+        return false
+    }
+    
+    guard let locationName = location.name, !locationName.isEmpty else {
+        print("❌ Location missing name")
+        return false
+    }
+    
+    // Check floor association
+    guard let floorId = location.floorId, !floorId.isEmpty else {
+        print("❌ Location missing floor ID")
+        return false
+    }
+    
+    // Validate location type
+    guard location.type != nil else {
+        print("❌ Location missing type")
+        return false
+    }
+    
+    print("✅ Location validation passed for: \(locationName)")
+    return true
+}
+
+func validateLocationArray(_ locations: [BCLocation]) -> [BCLocation] {
+    return locations.filter { validateLocation($0) }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+- (BOOL)validateLocation:(BCLocation *)location {
+    // Check essential properties
+    if (!location.id || location.id.length == 0) {
+        NSLog(@"❌ Location missing ID");
+        return NO;
+    }
+    
+    if (!location.name || location.name.length == 0) {
+        NSLog(@"❌ Location missing name");
+        return NO;
+    }
+    
+    // Check floor association
+    if (!location.floorId || location.floorId.length == 0) {
+        NSLog(@"❌ Location missing floor ID");
+        return NO;
+    }
+    
+    // Validate location type
+    if (location.type == 0) { // Assuming 0 is invalid/unset
+        NSLog(@"❌ Location missing type");
+        return NO;
+    }
+    
+    NSLog(@"✅ Location validation passed for: %@", location.name);
+    return YES;
+}
+
+- (NSArray<BCLocation *> *)validateLocationArray:(NSArray<BCLocation *> *)locations {
+    NSMutableArray *validLocations = [NSMutableArray array];
+    for (BCLocation *location in locations) {
+        if ([self validateLocation:location]) {
+            [validLocations addObject:location];
+        }
+    }
+    return [validLocations copy];
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+### Performance Optimization
+
+<Tabs hasCode>
+<TabItem value="swift" label="Swift">
+
+```swift
+class LocationManager {
+    private var cachedLocations: [BCLocation] = []
+    private var locationsByFloor: [String: [BCLocation]] = [:]
+    private var locationsByType: [BCLocationType: [BCLocation]] = [:]
+    
+    func organizeLocations(_ locations: [BCLocation]) {
+        self.cachedLocations = locations
+        
+        // Group by floor for efficient floor-based queries
+        locationsByFloor.removeAll()
+        for location in locations {
+            if let floorId = location.floorId {
+                if locationsByFloor[floorId] == nil {
+                    locationsByFloor[floorId] = []
+                }
+                locationsByFloor[floorId]?.append(location)
+            }
+        }
+        
+        // Group by type for efficient type-based queries
+        locationsByType.removeAll()
+        for location in locations {
+            if let type = location.type {
+                if locationsByType[type] == nil {
+                    locationsByType[type] = []
+                }
+                locationsByType[type]?.append(location)
+            }
+        }
+    }
+    
+    func getLocationsForFloor(_ floorId: String) -> [BCLocation] {
+        return locationsByFloor[floorId] ?? []
+    }
+    
+    func getLocationsByType(_ type: BCLocationType) -> [BCLocation] {
+        return locationsByType[type] ?? []
+    }
+    
+    func searchLocations(_ query: String) -> [BCLocation] {
+        let lowercaseQuery = query.lowercased()
+        return cachedLocations.filter { location in
+            return location.name?.lowercased().contains(lowercaseQuery) == true ||
+                   location.locationDescription?.lowercased().contains(lowercaseQuery) == true
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem value="objc" label="Objective-C">
+
+```objc
+@interface LocationManager : NSObject
+@property (nonatomic, strong) NSArray<BCLocation *> *cachedLocations;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSArray<BCLocation *> *> *locationsByFloor;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSArray<BCLocation *> *> *locationsByType;
+@end
+
+@implementation LocationManager
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _locationsByFloor = [NSMutableDictionary dictionary];
+        _locationsByType = [NSMutableDictionary dictionary];
+    }
+    return self;
+}
+
+- (void)organizeLocations:(NSArray<BCLocation *> *)locations {
+    self.cachedLocations = locations;
+    
+    // Group by floor for efficient floor-based queries
+    [self.locationsByFloor removeAllObjects];
+    for (BCLocation *location in locations) {
+        if (location.floorId) {
+            NSMutableArray *floorLocations = [self.locationsByFloor[location.floorId] mutableCopy];
+            if (!floorLocations) {
+                floorLocations = [NSMutableArray array];
+            }
+            [floorLocations addObject:location];
+            self.locationsByFloor[location.floorId] = [floorLocations copy];
+        }
+    }
+    
+    // Group by type for efficient type-based queries
+    [self.locationsByType removeAllObjects];
+    for (BCLocation *location in locations) {
+        if (location.type != 0) {
+            NSNumber *typeKey = @(location.type);
+            NSMutableArray *typeLocations = [self.locationsByType[typeKey] mutableCopy];
+            if (!typeLocations) {
+                typeLocations = [NSMutableArray array];
+            }
+            [typeLocations addObject:location];
+            self.locationsByType[typeKey] = [typeLocations copy];
+        }
+    }
+}
+
+- (NSArray<BCLocation *> *)getLocationsForFloor:(NSString *)floorId {
+    return self.locationsByFloor[floorId] ?: @[];
+}
+
+- (NSArray<BCLocation *> *)getLocationsByType:(BCLocationType)type {
+    return self.locationsByType[@(type)] ?: @[];
+}
+
+- (NSArray<BCLocation *> *)searchLocations:(NSString *)query {
+    NSString *lowercaseQuery = [query lowercaseString];
+    NSMutableArray *results = [NSMutableArray array];
+    
+    for (BCLocation *location in self.cachedLocations) {
+        BOOL nameMatch = [location.name.lowercaseString containsString:lowercaseQuery];
+        BOOL descriptionMatch = [location.locationDescription.lowercaseString containsString:lowercaseQuery];
+        
+        if (nameMatch || descriptionMatch) {
+            [results addObject:location];
+        }
+    }
+    
+    return [results copy];
+}
+
+@end
+```
+
+</TabItem>
+</Tabs>
+
+## Related Topics
+
+- [Sites](./sites) - Understanding the venue hierarchy
+- [Building Floor Selection](./building-floor-selection) - Managing floor-based location filtering
+- [Wayfinding](./wayfinding) - Using locations for route calculation
+- [Interactivity](./interactivity) - Handling location selection and interaction events
