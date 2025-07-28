@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "becomap-ios-sdk",
     platforms: [
-        .iOS(.v13)
+        .iOS(.v15)
     ],
     products: [
         .library(
@@ -16,6 +16,6 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "becomap",
-            path: "Sources/becomap.xcframework")
+            path: "Sources/becomap_ios.xcframework")
     ]
 )

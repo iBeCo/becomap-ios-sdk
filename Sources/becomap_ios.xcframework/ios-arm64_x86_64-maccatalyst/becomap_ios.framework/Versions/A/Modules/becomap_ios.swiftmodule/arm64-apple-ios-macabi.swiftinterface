@@ -1,0 +1,324 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.1.2 effective-5.10 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+// swift-module-flags: -target arm64-apple-ios18.2-macabi -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name becomap_ios
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -interface-compiler-version 6.1.2
+import CoreLocation
+import Foundation
+import Swift
+import UIKit
+import WebKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+@_exported import becomap_ios
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class BCCategory : ObjectiveC.NSObject {
+  public var id: Swift.String?
+  public var name: Swift.String?
+  public var icon: Swift.String?
+  public var color: becomap_ios.BCColor?
+  public var externalId: Swift.String?
+  public var iconName: Swift.String?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class BCColor : ObjectiveC.NSObject {
+  public var rgba: Swift.String?
+  public var hex: Swift.String?
+  public var opacity: Swift.Double?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public protocol BCMapViewDelegate {
+  @objc func mapView(_ mapView: becomap_ios.BCMapView, didRenderSite site: becomap_ios.BCSite)
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didLoadData success: Swift.Bool)
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didChangeView payload: Any)
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didSelectLocation location: becomap_ios.BCLocation)
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didSwitchFloor floor: becomap_ios.BCMapFloor)
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didLoadStep step: Any)
+  @objc optional func mapViewDidEndWalkthrough(_ mapView: becomap_ios.BCMapView)
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didReceiveCurrentFloor floor: becomap_ios.BCMapFloor)
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didReceiveRoute route: [becomap_ios.BCRouteSegment])
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didReceiveSearchResults results: [becomap_ios.BCLocation])
+  @objc optional func mapView(_ mapView: becomap_ios.BCMapView, didReceiveSearchCategories categories: [becomap_ios.BCCategory])
+  @objc func mapView(_ mapView: becomap_ios.BCMapView, didReceiveError payload: Any)
+}
+@objc public class BCRouteStep : ObjectiveC.NSObject, Swift.Codable {
+  final public let orderIndex: Swift.Int
+  final public let action: Swift.String
+  final public let direction: Swift.String
+  final public let reference: Swift.String
+  final public let distance: Swift.Double
+  final public let floorId: Swift.String
+  final public let referenceLocationId: Swift.String?
+  public init(orderIndex: Swift.Int, action: Swift.String, direction: Swift.String, reference: Swift.String, distance: Swift.Double, floorId: Swift.String, referenceLocationId: Swift.String?)
+  @objc deinit
+  public func encode(to encoder: any Swift.Encoder) throws
+  required public init(from decoder: any Swift.Decoder) throws
+}
+@_hasMissingDesignatedInitializers @objc public class BCRouteSegment : ObjectiveC.NSObject, Swift.Codable {
+  final public let orderIndex: Swift.Int
+  final public let steps: [becomap_ios.BCRouteStep]
+  final public let distance: Swift.Double
+  public init(orderIndex: Swift.Int, steps: [becomap_ios.BCRouteStep], distance: Swift.Double)
+  @objc deinit
+  public func encode(to encoder: any Swift.Encoder) throws
+  required public init(from decoder: any Swift.Decoder) throws
+}
+extension becomap_ios.BCMapView {
+  @_Concurrency.MainActor @preconcurrency public func selectFloor(floor: becomap_ios.BCMapFloor)
+}
+@_inheritsConvenienceInitializers @objc public class BCMapViewOptions : ObjectiveC.NSObject {
+  public var zoom: Swift.Double?
+  public var pitch: Swift.Double?
+  public var bearing: Swift.Double?
+  public var center: [Swift.Double]?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc @_Concurrency.MainActor @preconcurrency public class BCMapView : UIKit.UIView {
+  @objc @_Concurrency.MainActor @preconcurrency weak public var delegate: (any becomap_ios.BCMapViewDelegate)?
+  @objc @_Concurrency.MainActor @preconcurrency public var cacheState: becomap_ios.BCCacheState {
+    @objc get
+  }
+  @_Concurrency.MainActor @preconcurrency @objc override dynamic public init(frame: CoreFoundation.CGRect)
+  @_Concurrency.MainActor @preconcurrency @objc required dynamic public init?(coder aDecoder: Foundation.NSCoder)
+  @_Concurrency.MainActor @preconcurrency @objc convenience dynamic public init()
+  @objc deinit
+  @_Concurrency.MainActor @preconcurrency @objc override dynamic public var backgroundColor: UIKit.UIColor? {
+    @objc get
+    @objc set
+  }
+  @_Concurrency.MainActor @preconcurrency public func renderSiteWith(clientId: Swift.String, clientSecret: Swift.String, siteId: Swift.String)
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class BCLanguage : ObjectiveC.NSObject {
+  public var code: Swift.String?
+  public var name: Swift.String?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class BCBuilding : ObjectiveC.NSObject {
+  public var id: Swift.String?
+  public var name: Swift.String?
+  public var floors: [becomap_ios.BCMapFloor]?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc public class BCRouteOptions : ObjectiveC.NSObject {
+  public var maxDistanceThreshold: Swift.Double?
+  public var getAccessiblePath: Swift.Bool?
+  @objc override dynamic public init()
+  @objc deinit
+}
+extension becomap_ios.BCMapView {
+  @_Concurrency.MainActor @preconcurrency public func searchForLocation(searchString: Swift.String)
+  @_Concurrency.MainActor @preconcurrency public func searchForCategories(searchString: Swift.String)
+  @_Concurrency.MainActor @preconcurrency public func selectLocation(location: becomap_ios.BCLocation)
+  @_Concurrency.MainActor @preconcurrency public func selectAmenities(amenityType: becomap_ios.BCSiteAmenity)
+  @_Concurrency.MainActor @preconcurrency public func enableMultiSelection(enable: Swift.Bool)
+  @_Concurrency.MainActor @preconcurrency public func clearSelection()
+  @_Concurrency.MainActor @preconcurrency public func getCurrentFloor()
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class BCMapFloor : ObjectiveC.NSObject {
+  public var id: Swift.String?
+  public var name: Swift.String?
+  public var viewPort: becomap_ios.BCMapViewOptions?
+  public var elevation: Swift.Double?
+  public var shortName: Swift.String?
+  public var imageUrl: Swift.String?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public enum BCCacheState : Swift.Int {
+  case empty = 0
+  case populating = 1
+  case ready = 2
+  case error = 3
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum BCHappeningType : Swift.String {
+  case offer
+  case news
+  case event
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc public class BCHappenings : ObjectiveC.NSObject {
+  @objc public var id: Swift.String
+  @objc public var name: Swift.String
+  @objc public var descriptionText: Swift.String
+  @objc public var startDate: Swift.String
+  @objc public var endDate: Swift.String
+  @objc public var showDate: Swift.String
+  @objc public var externalId: Swift.String
+  @objc public var siteId: Swift.String
+  @objc public var locationId: Swift.String
+  @objc public var images: [Swift.String]
+  @objc public var type: Swift.String
+  @objc public var priority: Swift.Int
+  @objc public var customFields: [Swift.String : Any]
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class BCSite : ObjectiveC.NSObject {
+  @objc final public let id: Swift.String?
+  @objc final public let siteName: Swift.String?
+  @objc final public let address: Swift.String?
+  @objc final public let city: Swift.String?
+  @objc final public let countryCode: Swift.String?
+  @objc final public let postal: Swift.String?
+  @objc final public let state: Swift.String?
+  @objc final public let telephone: Swift.String?
+  @objc final public let tzId: Swift.String?
+  @objc final public let utcOffset: Swift.String?
+  @objc final public let link: Swift.String?
+  @objc final public let type: Swift.String?
+  @objc final public let buildings: [becomap_ios.BCBuilding]
+  @objc final public let imageUrls: becomap_ios.BCImageURLs?
+  @objc final public let operationHours: [becomap_ios.BCOperationHour]
+  @objc final public let otherLanguages: [becomap_ios.BCLanguage]?
+  @objc final public let defaultLanguage: becomap_ios.BCLanguage?
+  @objc final public let center: [Swift.Double]
+  @objc final public let defaultMap: Swift.String?
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class BCImageURLs : ObjectiveC.NSObject {
+  @objc final public let small: Swift.String?
+  @objc final public let original: Swift.String?
+  @objc final public let large: Swift.String?
+  @objc final public let medium: Swift.String?
+  @objc deinit
+}
+extension becomap_ios.BCMapView {
+  @_Concurrency.MainActor @preconcurrency public func focusTo(location: becomap_ios.BCLocation, zoomLevel: Swift.Double?, bearing: Swift.Double?, pitch: Swift.Double?)
+  @_Concurrency.MainActor @preconcurrency public func updateZoom(zoomLevel: Swift.Double)
+  @_Concurrency.MainActor @preconcurrency public func updatePitch(pitch: Swift.Double)
+  @_Concurrency.MainActor @preconcurrency public func updateBearing(bearing: Swift.Double)
+  @_Concurrency.MainActor @preconcurrency public func setBounds(southwest: CoreLocation.CLLocationCoordinate2D, northeast: CoreLocation.CLLocationCoordinate2D)
+  @_Concurrency.MainActor @preconcurrency public func resetDefaultViewport(newOptions: becomap_ios.BCMapViewOptions?)
+  @_Concurrency.MainActor @preconcurrency public func setViewport(newOptions: becomap_ios.BCMapViewOptions)
+  @_Concurrency.MainActor @preconcurrency public func getRoute(start: becomap_ios.BCLocation, goal: becomap_ios.BCLocation, wayPoints: [becomap_ios.BCLocation]?, routeOptions: becomap_ios.BCRouteOptions?)
+  @_Concurrency.MainActor @preconcurrency public func showRoute()
+  @_Concurrency.MainActor @preconcurrency public func showRoute(segmentOrderIndex: Swift.Int)
+  @_Concurrency.MainActor @preconcurrency public func showStep(step: Swift.Int)
+  @_Concurrency.MainActor @preconcurrency public func clearAllRoute()
+}
+@_inheritsConvenienceInitializers @objc public class BCOperationHour : ObjectiveC.NSObject {
+  public var opens: Swift.String?
+  public var closes: Swift.String?
+  public var dayOfWeek: [Swift.String]?
+  @objc override dynamic public init()
+  @objc deinit
+}
+extension becomap_ios.BCMapView {
+  @_Concurrency.MainActor @preconcurrency public func getLocations() -> [becomap_ios.BCLocation]
+  @_Concurrency.MainActor @preconcurrency public func getCategories() -> [becomap_ios.BCCategory]
+  @_Concurrency.MainActor @preconcurrency public func getAmenityLocations() -> [becomap_ios.BCLocation]
+  @_Concurrency.MainActor @preconcurrency public func getAmenityTypes() -> [Swift.String]
+  @_Concurrency.MainActor @preconcurrency public func getHappenings(type: becomap_ios.BCHappeningType) -> [becomap_ios.BCHappenings]
+}
+public enum BCLocationType : Swift.String {
+  case tenant
+  case amenities
+  case parking
+  case seating
+  case gate
+  case securityCheckpoint
+  case building
+  case entrance
+  case shuttle
+  case kiosk
+  case mapObject
+  case connection
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class BCLocation : ObjectiveC.NSObject {
+  public var id: Swift.String?
+  public var externalId: Swift.String?
+  public var name: Swift.String?
+  public var locationDescription: Swift.String?
+  public var type: becomap_ios.BCLocationType?
+  public var amenity: Swift.String?
+  public var phone: [Swift.String : Swift.String]?
+  public var social: [Swift.String : Swift.String]?
+  public var operationHours: [becomap_ios.BCOperationHour]?
+  public var links: [becomap_ios.BCLink]?
+  public var categories: [becomap_ios.BCCategory]?
+  public var tags: [Swift.String]?
+  public var banner: Swift.String?
+  public var logo: Swift.String?
+  public var topLocation: Swift.Bool?
+  public var showLogo: Swift.Bool?
+  public var floor: becomap_ios.BCMapFloor?
+  public var sortOrder: Swift.Int?
+  public var floorId: Swift.String?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class BCLink : ObjectiveC.NSObject {
+  public var url: Swift.String?
+  public var label: Swift.String?
+  @objc override dynamic public init()
+  @objc deinit
+}
+public enum BCSiteAmenity : Swift.String {
+  case restroom
+  case prayerRoom
+  case washroomMen
+  case washroomWomen
+  case atm
+  case foodCourt
+  case informationDesk
+  case pickupPoint
+  case washroomFamily
+  case washroomAccessible
+  case feedingRoom
+  case taxiStand
+  case prepaidTaxi
+  case busTerminal
+  case metroExit
+  case drinkingWater
+  case firstAid
+  case checkInCounter
+  case baggageBelt
+  case baggageCounter
+  case locker
+  case currencyExchange
+  case walletParking
+  case reception
+  case helpDesk
+  case billingCounter
+  case vendingMachine
+  case escalator
+  case elevator
+  case stairs
+  case passage
+  case door
+  case ramp
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+extension becomap_ios.BCCacheState : Swift.Equatable {}
+extension becomap_ios.BCCacheState : Swift.Hashable {}
+extension becomap_ios.BCCacheState : Swift.RawRepresentable {}
+extension becomap_ios.BCHappeningType : Swift.Equatable {}
+extension becomap_ios.BCHappeningType : Swift.Hashable {}
+extension becomap_ios.BCHappeningType : Swift.RawRepresentable {}
+extension becomap_ios.BCLocationType : Swift.Equatable {}
+extension becomap_ios.BCLocationType : Swift.Hashable {}
+extension becomap_ios.BCLocationType : Swift.RawRepresentable {}
+extension becomap_ios.BCSiteAmenity : Swift.Equatable {}
+extension becomap_ios.BCSiteAmenity : Swift.Hashable {}
+extension becomap_ios.BCSiteAmenity : Swift.RawRepresentable {}

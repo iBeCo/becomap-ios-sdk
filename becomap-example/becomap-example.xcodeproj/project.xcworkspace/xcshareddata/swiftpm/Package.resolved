@@ -1,13 +1,13 @@
 {
-  "originHash" : "ac21ae668f834f37fab6748d5585aed1281efb4fa85b8015d192ac8dd1f8c4e5",
+  "originHash" : "82d4974b7261dfdc7a80e926a43d6138a77235e849a548a9ba530297e99d97a7",
   "pins" : [
     {
       "identity" : "becomap-ios-sdk",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/iBeCo/becomap-ios-sdk",
       "state" : {
-        "revision" : "e5ace191febe71191167603f6d57988dd7661750",
-        "version" : "1.0.13"
+        "revision" : "2432abf04f23342df59b9675f633d30aa7bcc4bc",
+        "version" : "1.0.12"
       }
     }
   ],
