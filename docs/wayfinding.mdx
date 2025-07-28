@@ -11,6 +11,10 @@ The Beco iOS SDK provides a comprehensive wayfinding system that calculates opti
 
 ## Overview
 
+:::info Navigation System
+The wayfinding system consists of several key components that work together to provide seamless indoor navigation.
+:::
+
 The wayfinding system consists of several key components:
 
 - **Route Calculation**: Calculate optimal paths between locations with waypoint support
@@ -18,6 +22,8 @@ The wayfinding system consists of several key components:
 - **Route Objects**: Structured route data with steps and navigation instructions
 - **Route Options**: Configure accessibility and routing preferences
 - **Error Handling**: Comprehensive error management for route failures
+
+---
 
 ## Core Components
 
@@ -162,6 +168,12 @@ extension MapViewController: BCMapViewDelegate {
     
     // Display the route on the map
     [mapView showRoute];
+    
+    // Optionally show route on specific floor
+    BCRouteStep *firstStep = route.firstObject.steps.firstObject;
+    if (firstStep) {
+        [mapView showRouteOnFloorWithFloorId:firstStep.floorId];
+    }
 }
 
 - (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
@@ -241,6 +253,12 @@ func calculateRouteWithWaypoints() {
 func showSpecificRouteSegment(_ orderIndex: Int) {
     // Show specific route segment
     mapView.showRoute(segmentOrderIndex: orderIndex)
+    
+    // Find the segment and show it on the appropriate floor
+    if let segment = routeSegments.first(where: { $0.orderIndex == orderIndex }),
+       let firstStep = segment.steps.first {
+        mapView.showRouteOnFloor(floorId: firstStep.floorId)
+    }
 }
 
 func showRouteStep(_ stepIndex: Int) {
@@ -261,6 +279,20 @@ func clearAllRoutes() {
 - (void)showSpecificRouteSegment:(NSInteger)orderIndex {
     // Show specific route segment
     [self.mapView showRouteWithSegmentOrderIndex:orderIndex];
+    
+    // Find the segment and show it on the appropriate floor
+    BCRouteSegment *segment = nil;
+    for (BCRouteSegment *s in self.routeSegments) {
+        if (s.orderIndex == orderIndex) {
+            segment = s;
+            break;
+        }
+    }
+    
+    if (segment && segment.steps.count > 0) {
+        BCRouteStep *firstStep = segment.steps.firstObject;
+        [self.mapView showRouteOnFloorWithFloorId:firstStep.floorId];
+    }
 }
 
 - (void)showRouteStep:(NSInteger)stepIndex {

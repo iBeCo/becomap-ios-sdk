@@ -11,9 +11,15 @@ The Beco iOS SDK uses delegate protocols to notify your application about map ev
 
 ## BCMapViewDelegate
 
+:::info Primary Delegate Protocol
 The primary delegate protocol for map events and lifecycle callbacks.
+:::
 
 ### Required Methods
+
+:::warning Essential Implementation
+These methods must be implemented to handle core map functionality and error scenarios.
+:::
 
 #### mapView(_:didRenderSite:)
 Called when the map has successfully rendered and site data is available. This is the primary success callback indicating that the map is ready for use.
@@ -23,8 +29,14 @@ Called when map initialization fails or errors occur during operation. Provides 
 
 ### Optional Methods
 
+:::tip Enhanced Functionality
+Implement these optional methods to handle specific user interactions and advanced features.
+:::
+
 #### mapView(_:didLoadData:)
+:::note Data Access
 Called when categories and locations data has been loaded and cached. After this callback with `success: true`, you can safely access `getCategories()`, `getLocations()`, and `getAmenityLocations()`.
+:::
 
 #### mapView(_:didChangeView:)
 Called when the map view changes (zoom, pan, etc.). Provides view change data.

@@ -11,19 +11,27 @@ The Beco iOS SDK provides indoor mapping and navigation capabilities for iOS app
 
 ## Requirements
 
-- iOS 13.0 or later
-- Xcode 12.0 or later
+:::note System Requirements
+Ensure your development environment meets these minimum requirements before starting integration.
+:::
+
+- iOS 15.0 or later
+- Xcode 16.0 or later
 - Swift 5.0 or later
 - Valid Beco client credentials
 
 ## Installation
+
+:::tip Recommended Method
+Swift Package Manager is the recommended way to integrate the Beco iOS SDK.
+:::
 
 ### Swift Package Manager (Recommended)
 
 1. In Xcode, go to **File → Add Package Dependencies**
 2. Enter the repository URL:
    ```
-   https://github.com/sayone-tech/becomap-ios-sdk
+   https://github.com/iBeCo/becomap-ios-sdk
    ```
 3. Select the version and add to your target
 
@@ -31,12 +39,18 @@ The Beco iOS SDK provides indoor mapping and navigation capabilities for iOS app
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/sayone-tech/becomap-ios-sdk.git
+   git clone https://github.com/iBeCo/becomap-ios-sdk.git
    ```
 2. Add the `becomap-ios` folder to your project
 3. Add as a framework dependency
 
+---
+
 ## Basic Implementation
+
+:::info Setup Process
+Follow these steps to create and configure your first BCMapView instance.
+:::
 
 ### Create a BCMapView
 
@@ -111,7 +125,13 @@ class MapViewController: UIViewController {
 </TabItem>
 </Tabs>
 
+---
+
 ### Load the Site
+
+:::warning Authentication Required
+Use `renderSiteWith` to load your venue with the required credentials. Contact support to obtain your client credentials.
+:::
 
 Use `renderSiteWith` to load your venue with the required credentials:
 
@@ -187,7 +207,13 @@ extension MapViewController: BCMapViewDelegate {
 </TabItem>
 </Tabs>
 
+---
+
 ## Next Steps
+
+:::tip Continue Learning
+Explore these guides to build more advanced features with the Beco iOS SDK.
+:::
 
 - [Using Callbacks](./using_callbacks) - Learn about delegate methods
 - [Sites](./sites) - Understanding venue data structure

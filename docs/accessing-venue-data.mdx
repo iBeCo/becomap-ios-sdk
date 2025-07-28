@@ -11,9 +11,15 @@ After the map successfully loads and the `didLoadData` callback is triggered, th
 
 ## Overview
 
+:::info Data Availability
 Once `mapView(_:didLoadData:)` is called with `success: true`, all venue data is cached and available through the `BCMapView` instance. The SDK provides data retrieval methods to help you build robust applications that handle various data states gracefully.
+:::
 
 ## Data Access Methods
+
+:::note Cached Data Access
+These methods provide synchronous access to cached venue data after successful loading.
+:::
 
 ### getCategories()
 

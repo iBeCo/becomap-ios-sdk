@@ -11,6 +11,10 @@ Comprehensive error handling is crucial for building robust indoor navigation ap
 
 ## Overview
 
+:::info Error Management System
+The Becomap iOS SDK provides comprehensive error handling to help you build robust applications.
+:::
+
 The Becomap iOS SDK provides error handling through:
 
 - **Delegate Error Callbacks**: Centralized error reporting through `mapView(_:didReceiveError:)`
@@ -20,6 +24,10 @@ The Becomap iOS SDK provides error handling through:
 
 ## Error Types
 
+:::warning Critical Error Categories
+Understanding these error types is essential for implementing proper error handling.
+:::
+
 ### Initialization Errors
 
 Errors that occur during SDK initialization and site loading:
@@ -28,6 +36,8 @@ Errors that occur during SDK initialization and site loading:
 - **Network Errors**: Connection timeouts, no internet connectivity
 - **Site Loading Errors**: Invalid site ID, site not found
 - **Data Parsing Errors**: Malformed site data
+
+---
 
 ### Runtime Errors
 
@@ -623,7 +633,7 @@ class ErrorLogger {
             "operation": operation,
             "message": message,
             "platform": "iOS",
-            "sdk_version": "1.0.0"
+            "sdk_version": "2.0.0"
         ]
         
         if let debug = debug {
@@ -727,7 +737,7 @@ private func handleStructuredError(_ errorDict: [String: Any]) {
         @"operation": operation ?: @"unknown",
         @"message": message ?: @"Unknown error",
         @"platform": @"iOS",
-        @"sdk_version": @"1.0.0"
+        @"sdk_version": @"2.0.0"
     }];
     
     if (debug) {

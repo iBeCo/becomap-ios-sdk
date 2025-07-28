@@ -11,22 +11,33 @@ The Beco iOS SDK provides comprehensive indoor mapping and navigation capabiliti
 
 ## Key Features
 
-- **🗺️ Indoor Mapping**: Multi-floor building maps with interactive navigation
-- **📍 Location Services**: Search, selection, and management of points of interest
-- **🧭 Route Planning**: Multi-floor navigation with waypoint support
-- **🏢 Floor Switching**: Seamless navigation between building floors
-- **⚡ Real-time Updates**: Live events, happenings, and dynamic content
-- **♿ Accessibility**: Support for accessible route planning
-- **🎯 High Performance**: Cached data access for optimal performance
+:::info Comprehensive Indoor Mapping Solution
+The Beco iOS SDK offers a complete suite of features for building sophisticated indoor navigation applications.
+:::
+
+- **Indoor Mapping**: Multi-floor building maps with interactive navigation
+- **Location Services**: Search, selection, and management of points of interest
+- **Route Planning**: Multi-floor navigation with waypoint support
+- **Floor Switching**: Seamless navigation between building floors
+- **Real-time Updates**: Live events, happenings, and offers
+- **Accessibility**: Support for accessible route planning
+- **High Performance**: Cached data access for optimal performance
 
 ## Requirements
 
-- **iOS**: 13.0 or later
-- **Xcode**: 12.0 or later
+:::note System Requirements
+Ensure your development environment meets these minimum requirements before integration.
+:::
+
+- **iOS**: 15.0 or later
 - **Swift**: 5.0 or later
 - **Credentials**: Valid Beco client credentials
 
 ## Installation
+
+:::tip Recommended Installation Method
+Swift Package Manager is the recommended way to integrate the Beco iOS SDK into your project.
+:::
 
 ### Swift Package Manager (Recommended)
 
@@ -47,6 +58,8 @@ Add the Beco iOS SDK to your project using Swift Package Manager:
    ```
 2. Drag the `becomap-ios` folder into your Xcode project
 3. Add the framework as a dependency to your target
+
+---
 
 ## Quick Start
 
@@ -172,17 +185,26 @@ extension MapViewController: BCMapViewDelegate {
 </TabItem>
 </Tabs>
 
+---
+
 ## Architecture
+
+:::info Hybrid Architecture
+The iOS SDK provides a hybrid architecture that combines the best of native iOS performance with advanced mapping technologies.
+:::
 
 The iOS SDK provides a hybrid architecture that combines:
 
 - **Native iOS Performance**: Swift-based framework with native UI integration
-- **Web-based Mapping**: Advanced mapping capabilities using WebKit
 - **High-Performance Caching**: O(1) lookup with thread-safe concurrent access
 - **Event-Driven Communication**: Asynchronous bridge between JavaScript and native layers
 - **Type-Safe Models**: Comprehensive Swift models with JSON parsing
 
 ## Core Components
+
+:::note SDK Components
+Understanding these core components is essential for effective SDK integration.
+:::
 
 ### BCMapView
 The main view class that displays indoor maps and handles user interactions.
@@ -198,6 +220,10 @@ Protocol for receiving map events, data loading, and user interactions.
 - **BCCategory**: Location categories for filtering
 
 ### Cache System
+:::tip High Performance
+High-performance caching system that provides optimal data access after initial loading.
+:::
+
 High-performance caching system that provides:
 - **Synchronous data access** after initial loading
 - **Thread-safe operations** with concurrent queue
@@ -205,6 +231,10 @@ High-performance caching system that provides:
 - **Automatic cache population** after site loading
 
 ## Data Access Methods
+
+:::warning Data Availability
+After the `didLoadData` callback, you can access venue data synchronously.
+:::
 
 After the `didLoadData` callback, you can access venue data synchronously:
 
@@ -214,18 +244,26 @@ After the `didLoadData` callback, you can access venue data synchronously:
 - `getAmenityTypes()` - Available amenity types
 - `getHappenings(type:)` - Events, offers, and news
 
+---
+
 ## Next Steps
+
+:::tip Explore Further
+Continue with these guides to build comprehensive indoor mapping applications.
+:::
 
 - [Getting Started](./getting-started) - Detailed setup guide
 - [Using Callbacks](./using_callbacks) - Understanding delegate methods
 - [Accessing Venue Data](./accessing-venue-data) - Working with cached data
 - [Locations](./locations) - Managing points of interest
 - [Wayfinding](./wayfinding) - Route planning and navigation
-- [API Reference](../../documentation/ios-api-reference/index.html) - Complete API documentation
 
 ## Support
 
-- **Repository**: [https://github.com/sayone-tech/becomap-ios-sdk](https://github.com/sayone-tech/becomap-ios-sdk)
-- **API Reference**: [Complete API Documentation](../../documentation/ios-api-reference/index.html)
+:::info Get Help
+Need assistance? Contact our support team or explore the repository.
+:::
+
+- **Repository**: [https://github.com/iBeCo/becomap-ios-sdk](https://github.com/iBeCo/becomap-ios-sdk)
 - **Email**: [hello@becomap.com](mailto:hello@becomap.com)
 - **Documentation**: Complete guides and API reference
