@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/iBeCo/becomap-ios-sdk",
       "state" : {
-        "revision" : "29ad7f1affd2275184c5f469b475ee9213642fc5",
-        "version" : "1.0.2"
+        "revision" : "2b6ad1c7a256e5a438fcfcf9af804e73387e502d",
+        "version" : "2.0.0"
       }
     }
   ],
