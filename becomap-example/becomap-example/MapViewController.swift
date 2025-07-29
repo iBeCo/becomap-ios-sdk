@@ -42,9 +42,9 @@ class MapViewController: UIViewController {
         serchHelper?.delegate = self
         mapView.delegate = self
         mapView.renderSiteWith(
-            clientId: "4b7d2e1a63b92dce7451f31485f709a542617c81",
-            clientSecret: "8e2d46a1b93fc82b5d4a0e157f9c7d3",
-            siteId: "67f4e30b68b4174a916d326d"
+            clientId: "XXXXXXX",
+            clientSecret: "XXXXX",
+            siteId: "XXXXX"
         )
     }
 
