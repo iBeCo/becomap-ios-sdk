@@ -15,6 +15,60 @@ Stay up to date with the latest features and improvements in the Beco iOS SDK.
 
 ---
 
+## Version 2.0.1 - Bug Fixes and Optimizations
+*Released: January 19, 2025*
+
+:::note Maintenance Release
+This release focuses on improving stability and performance based on initial user feedback.
+:::
+
+### 🐛 Bug Fixes
+
+#### Core Functionality
+- **Map Rendering**: Fixed intermittent rendering issues on certain iOS devices
+- **Memory Management**: Resolved memory leaks in map view lifecycle
+- **Route Calculation**: Fixed edge cases in multi-floor route planning
+- **Location Services**: Improved accuracy of point-of-interest positioning
+- **Floor Switching**: Resolved animation glitches during floor transitions
+
+#### Delegate Callbacks
+- **Error Handling**: Fixed missing error callbacks in specific failure scenarios
+- **Site Loading**: Improved reliability of site loading completion callbacks
+- **Route Events**: Fixed duplicate route calculation callbacks
+
+### ⚡ Performance Optimizations
+
+#### Rendering Performance
+- **Map Tiles**: Optimized tile loading and caching mechanisms
+- **Memory Usage**: Improved memory efficiency for large building maps
+- **Battery Life**: Reduced CPU usage during idle map states
+
+#### Caching Improvements
+- **Asset Caching**: Enhanced caching strategy for map assets
+- **Route Caching**: Improved route calculation caching for frequently used paths
+- **Data Persistence**: Optimized local storage of building data
+
+### 🔧 Technical Improvements
+
+#### Stability Enhancements
+- **Thread Safety**: Enhanced thread safety in concurrent map operations
+- **Error Recovery**: Improved automatic recovery from network failures
+- **Resource Management**: Better cleanup of resources during view deallocation
+
+#### Compatibility
+- **iOS 18 Support**: Verified compatibility with latest iOS version
+- **Xcode 16.2**: Updated for latest Xcode version compatibility
+- **Swift 6.0**: Enhanced support for Swift 6.0 language features
+
+### 📦 Installation Notes
+
+**No Breaking Changes:**
+- Drop-in replacement for version 2.0.0
+- No API changes required
+- Existing integrations remain fully compatible
+
+---
+
 ## Version 2.0.0 - Initial Release
 *Released: January 28, 2025*
 

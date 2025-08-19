@@ -110,10 +110,6 @@ extension MapViewController: BCMapViewDelegate {
         // Display the route on the map
         mapView.showRoute()
         
-        // Optionally show route on specific floor
-        if let firstStep = route.first?.steps.first {
-            mapView.showRouteOnFloor(floorId: firstStep.floorId)
-        }
     }
     
     func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
@@ -169,11 +165,6 @@ extension MapViewController: BCMapViewDelegate {
     // Display the route on the map
     [mapView showRoute];
     
-    // Optionally show route on specific floor
-    BCRouteStep *firstStep = route.firstObject.steps.firstObject;
-    if (firstStep) {
-        [mapView showRouteOnFloorWithFloorId:firstStep.floorId];
-    }
 }
 
 - (void)mapView:(BCMapView *)mapView didReceiveError:(id)payload {
@@ -253,12 +244,6 @@ func calculateRouteWithWaypoints() {
 func showSpecificRouteSegment(_ orderIndex: Int) {
     // Show specific route segment
     mapView.showRoute(segmentOrderIndex: orderIndex)
-    
-    // Find the segment and show it on the appropriate floor
-    if let segment = routeSegments.first(where: { $0.orderIndex == orderIndex }),
-       let firstStep = segment.steps.first {
-        mapView.showRouteOnFloor(floorId: firstStep.floorId)
-    }
 }
 
 func showRouteStep(_ stepIndex: Int) {
@@ -287,11 +272,6 @@ func clearAllRoutes() {
             segment = s;
             break;
         }
-    }
-    
-    if (segment && segment.steps.count > 0) {
-        BCRouteStep *firstStep = segment.steps.firstObject;
-        [self.mapView showRouteOnFloorWithFloorId:firstStep.floorId];
     }
 }
 
@@ -416,8 +396,6 @@ func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
         handleRouteError(errorDict)
     case "showRoute":
         handleRouteDisplayError(errorDict)
-    case "showRouteOnFloor":
-        handleFloorRouteError(errorDict)
     default:
         print("❌ Unhandled operation error: \(operation)")
     }
@@ -477,8 +455,6 @@ private func handleFloorRouteError(_ errorDict: [String: Any]) {
         [self handleRouteError:errorDict];
     } else if ([operation isEqualToString:@"showRoute"]) {
         [self handleRouteDisplayError:errorDict];
-    } else if ([operation isEqualToString:@"showRouteOnFloor"]) {
-        [self handleFloorRouteError:errorDict];
     } else {
         NSLog(@"❌ Unhandled operation error: %@", operation);
     }
