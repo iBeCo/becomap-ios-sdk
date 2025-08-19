@@ -317,14 +317,6 @@ SWIFT_CLASS("_TtC11becomap_ios10BCBuilding")
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
-/// Cache state enumeration for tracking cache population status
-typedef SWIFT_ENUM(NSInteger, BCCacheState, open) {
-  BCCacheStateEmpty = 0,
-  BCCacheStatePopulating = 1,
-  BCCacheStateReady = 2,
-  BCCacheStateError = 3,
-};
-
 /// Represents a category for organizing locations within the becomap system.
 /// Categories help users filter and find locations of interest by grouping them
 /// into logical collections such as “Food & Beverage”, “Shopping”, “Services”, etc.
@@ -416,9 +408,68 @@ SWIFT_CLASS("_TtC11becomap_ios6BCLink")
 @end
 
 /// Represents a point of interest or location within a site.
-/// A location can be any point of interest such as a store, amenity, entrance, or
-/// other facility within the site. This class contains all the metadata about the
-/// location including its name, type, contact information, and operational details.
+/// A location can be any point of interest such as a store, restaurant, amenity, entrance,
+/// office, or other facility within the venue. This class contains comprehensive metadata
+/// about the location including its identification, classification, contact information,
+/// operational details, and visual assets.
+/// <h2>Location Types</h2>
+/// Locations can represent various types of points of interest:
+/// <ul>
+///   <li>
+///     <em>Retail</em>: Stores, shops, boutiques
+///   </li>
+///   <li>
+///     <em>Food & Beverage</em>: Restaurants, cafes, food courts
+///   </li>
+///   <li>
+///     <em>Services</em>: ATMs, information desks, customer service
+///   </li>
+///   <li>
+///     <em>Amenities</em>: Restrooms, parking, elevators, escalators
+///   </li>
+///   <li>
+///     <em>Navigation</em>: Entrances, exits, waypoints
+///   </li>
+///   <li>
+///     <em>Entertainment</em>: Cinemas, play areas, event spaces
+///   </li>
+/// </ul>
+/// <h2>Usage Examples</h2>
+/// \code
+/// // Display location information
+/// func displayLocation(_ location: BCLocation) {
+///     nameLabel.text = location.name
+///     descriptionLabel.text = location.locationDescription
+///
+///     // Show category badges
+///     if let categories = location.categories {
+///         for category in categories {
+///             addCategoryBadge(category.name ?? "")
+///         }
+///     }
+///
+///     // Handle contact information
+///     if let phones = location.phone {
+///         for (type, number) in phones {
+///             addPhoneButton(type: type, number: number)
+///         }
+///     }
+/// }
+///
+/// // Navigate to location
+/// func navigateToLocation(_ location: BCLocation) {
+///     mapView.selectLocation(location: location)
+///     mapView.focusTo(location: location)
+/// }
+///
+/// \endcode<h2>Data Source</h2>
+/// Location data is automatically cached when <code>BCMapView.renderSiteWith(clientId:clientSecret:siteId:)</code>
+/// completes successfully. Access locations using <code>BCMapView.getLocations()</code> or through
+/// search results from <code>BCMapView.searchForLocation(searchString:)</code>.
+/// since:
+/// 1.0.0
+/// author:
+/// Beco
 SWIFT_CLASS("_TtC11becomap_ios10BCLocation")
 @interface BCLocation : NSObject
 /// Default initializer for BCLocation.
@@ -438,54 +489,382 @@ SWIFT_CLASS("_TtC11becomap_ios10BCMapFloor")
 @protocol BCMapViewDelegate;
 @class NSCoder;
 @class UIColor;
+/// BCMapView is the main interface for displaying interactive indoor maps.
+/// BCMapView is a custom UIView that embeds a WebView to display beCoMap interactive maps.
+/// It provides comprehensive methods for indoor mapping, navigation, location services, and
+/// real-time interaction with map features like floor selection, location focusing, and
+/// route calculation.
+/// <h2>Key Features</h2>
+/// <ul>
+///   <li>
+///     <em>Interactive Indoor Maps</em>: Display detailed floor plans with zoom, pan, and rotation
+///   </li>
+///   <li>
+///     <em>Location Services</em>: Search, select, and navigate to points of interest
+///   </li>
+///   <li>
+///     <em>Multi-floor Navigation</em>: Seamless floor switching with route continuity
+///   </li>
+///   <li>
+///     <em>Real-time Data</em>: Cached data access for immediate response
+///   </li>
+///   <li>
+///     <em>Customizable Viewport</em>: Control zoom, pitch, bearing, and center coordinates
+///   </li>
+/// </ul>
+/// <h2>Usage Example</h2>
+/// \code
+/// import becomap_ios
+///
+/// class MapViewController: UIViewController {
+///     var mapView: BCMapView!
+///
+///     override func viewDidLoad() {
+///         super.viewDidLoad()
+///
+///         mapView = BCMapView()
+///         mapView.delegate = self
+///         view.addSubview(mapView)
+///
+///         mapView.renderSiteWith(
+///             clientId: "your_client_id",
+///             clientSecret: "your_client_secret",
+///             siteId: "your_site_id"
+///         )
+///     }
+/// }
+///
+/// extension MapViewController: BCMapViewDelegate {
+///     func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+///         print("Site loaded: \(site.siteName ?? "Unknown")")
+///         // Access cached data immediately
+///         let locations = mapView.getLocations()
+///         let categories = mapView.getCategories()
+///     }
+///
+///     func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+///         print("Map error: \(payload)")
+///     }
+/// }
+///
+/// \endcode<h2>Architecture</h2>
+/// The map communication is handled via a JavaScript bridge, allowing seamless interaction
+/// between the iOS native code and the JavaScript map library loaded in the WebView.
+/// All data is automatically cached for immediate synchronous access after initial loading.
+/// <h2>Thread Safety</h2>
+/// BCMapView is designed to be used from the main thread. All delegate callbacks are
+/// delivered on the main queue, and all public methods should be called from the main thread.
+/// since:
+/// 1.0.0
+/// author:
+/// Beco
 SWIFT_CLASS("_TtC11becomap_ios9BCMapView")
 @interface BCMapView : UIView
-/// Delegate for receiving map view callbacks
+/// The delegate object that receives map view callbacks and events.
+/// Set this property to receive notifications about map state changes, user interactions,
+/// data loading events, and error conditions. The delegate methods provide comprehensive
+/// feedback about map operations and user interactions.
+/// important:
+/// The delegate is held as a weak reference to prevent retain cycles.
+/// note:
+/// All delegate methods are called on the main queue.
+/// <h2>Required Delegate Methods</h2>
+/// <ul>
+///   <li>
+///     <code>mapView(_:didRenderSite:)</code>: Called when site rendering completes successfully
+///   </li>
+///   <li>
+///     <code>mapView(_:didReceiveError:)</code>: Called when errors occur during map operations
+///   </li>
+/// </ul>
+/// <h2>Optional Delegate Methods</h2>
+/// <ul>
+///   <li>
+///     <code>mapView(_:didLoadData:)</code>: Called when cache population completes
+///   </li>
+///   <li>
+///     <code>mapView(_:didSelectLocation:)</code>: Called when user selects a location
+///   </li>
+///   <li>
+///     <code>mapView(_:didSwitchFloor:)</code>: Called when user changes floors
+///   </li>
+///   <li>
+///     And many more for comprehensive event handling
+///   </li>
+/// </ul>
 @property (nonatomic, weak) id <BCMapViewDelegate> _Nullable delegate;
-/// Current cache state
-@property (nonatomic, readonly) enum BCCacheState cacheState;
-/// Creates a new BCMapView programmatically.
-/// You can create your map views programmatically. When creating a view, you typically specify its initial size and position relative to its future superview. To add BCMapView as a subview to another view, call the addSubview(_:) method on the superview.
+/// Creates a new BCMapView programmatically with the specified frame.
+/// This is the designated initializer for creating BCMapView instances programmatically.
+/// The view will be initialized with a WebView for map display and all necessary
+/// internal components for map functionality.
+/// <h2>Usage</h2>
+/// \code
+/// let mapView = BCMapView(frame: CGRect(x: 0, y: 0, width: 300, height: 400))
+/// mapView.delegate = self
+/// view.addSubview(mapView)
+///
+/// \endcodeimportant:
+/// After initialization, set the delegate and call <code>renderSiteWith(clientId:clientSecret:siteId:)</code>
+/// to begin loading map data.
+/// note:
+/// The view will automatically set up its WebView and internal components during initialization.
 /// \param frame The frame rectangle for the view, measured in points.
+/// This defines the initial size and position of the map view.
 ///
 - (nonnull instancetype)initWithFrame:(CGRect)frame OBJC_DESIGNATED_INITIALIZER;
-/// Creates a new BCMapView from a storyboard or XIB file.
-/// \param coder The decoder object.
+/// Creates a new BCMapView from Interface Builder (Storyboard or XIB).
+/// This initializer is called automatically when the view is loaded from a storyboard
+/// or XIB file. The view will be initialized with all necessary internal components.
+/// <h2>Usage in Interface Builder</h2>
+/// <ol>
+///   <li>
+///     Add a UIView to your storyboard
+///   </li>
+///   <li>
+///     Set the custom class to <code>BCMapView</code>
+///   </li>
+///   <li>
+///     Create an IBOutlet connection
+///   </li>
+///   <li>
+///     Set the delegate and render the site in <code>viewDidLoad</code>
+///   </li>
+/// </ol>
+/// \code
+/// @IBOutlet weak var mapView: BCMapView!
 ///
+/// override func viewDidLoad() {
+///     super.viewDidLoad()
+///     mapView.delegate = self
+///     mapView.renderSiteWith(clientId: "id", clientSecret: "secret", siteId: "site")
+/// }
+///
+/// \endcode\param coder The decoder object containing the archived view data.
+///
+///
+/// returns:
+/// An initialized BCMapView instance, or nil if initialization fails.
 - (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)aDecoder OBJC_DESIGNATED_INITIALIZER;
 /// Convenience initializer that creates a BCMapView with zero frame.
+/// This initializer creates a map view with a zero frame, which is useful when
+/// you plan to set the frame later using Auto Layout or manual frame setting.
+/// <h2>Usage</h2>
+/// \code
+/// let mapView = BCMapView()
+/// mapView.delegate = self
+/// mapView.translatesAutoresizingMaskIntoConstraints = false
+/// view.addSubview(mapView)
+///
+/// // Set up Auto Layout constraints
+/// NSLayoutConstraint.activate([
+///     mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+///     mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+///     mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+///     mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+/// ])
+///
+/// \endcodenote:
+/// Remember to set the frame or Auto Layout constraints after initialization.
 - (nonnull instancetype)init;
 @property (nonatomic, strong) UIColor * _Nullable backgroundColor;
 @end
 
 @class BCSite;
 @class BCRouteSegment;
-SWIFT_PROTOCOL("_TtP11becomap_ios17BCMapViewDelegate_")
-@protocol BCMapViewDelegate
-/// mapView:didRenderSite:
+/// Protocol for receiving BCMapView callbacks, events, and data updates.
+/// The BCMapViewDelegate protocol defines methods that respond to map view events,
+/// user interactions, data loading completion, and error conditions. Implementing
+/// this protocol allows your application to respond to map state changes and
+/// provide appropriate user feedback.
+/// <h2>Required Methods</h2>
+/// All delegate implementations must provide the required methods:
 /// <ul>
 ///   <li>
-///     Invoked when a BCSite is successfully loaded and rendered in BCMapView.
+///     <code>mapView(_:didRenderSite:)</code>: Called when site rendering completes successfully
+///   </li>
+///   <li>
+///     <code>mapView(_:didReceiveError:)</code>: Called when errors occur during map operations
 ///   </li>
 /// </ul>
-/// \param mapView BCMapView reference
+/// <h2>Optional Methods</h2>
+/// Optional methods provide additional event handling for enhanced functionality:
+/// <ul>
+///   <li>
+///     Data loading events
+///   </li>
+///   <li>
+///     User interaction events
+///   </li>
+///   <li>
+///     Navigation and route events
+///   </li>
+///   <li>
+///     Search result events
+///   </li>
+/// </ul>
+/// <h2>Thread Safety</h2>
+/// All delegate methods are called on the main queue, making it safe to update
+/// UI elements directly from delegate method implementations.
+/// <h2>Usage Example</h2>
+/// \code
+/// class MapViewController: UIViewController, BCMapViewDelegate {
+///     @IBOutlet weak var mapView: BCMapView!
 ///
-/// \param site BCSite reference
+///     override func viewDidLoad() {
+///         super.viewDidLoad()
+///         mapView.delegate = self
+///         mapView.renderSiteWith(clientId: "id", clientSecret: "secret", siteId: "site")
+///     }
+///
+///     // MARK: - Required Methods
+///
+///     func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+///         print("Site loaded: \(site.siteName ?? "Unknown")")
+///         // Access cached data immediately
+///         let locations = mapView.getLocations()
+///         updateLocationList(locations)
+///     }
+///
+///     func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+///         print("Map error: \(payload)")
+///         showErrorAlert("Failed to load map")
+///     }
+///
+///     // MARK: - Optional Methods
+///
+///     func mapView(_ mapView: BCMapView, didSelectLocation location: BCLocation) {
+///         showLocationDetails(location)
+///     }
+/// }
+///
+/// \endcodesince:
+/// 1.0.0
+/// author:
+/// Beco
+SWIFT_PROTOCOL("_TtP11becomap_ios17BCMapViewDelegate_")
+@protocol BCMapViewDelegate
+/// Called when a site has been successfully loaded and rendered in the map view.
+/// This is the primary success callback indicating that the map is ready for use.
+/// After this method is called, the map is fully interactive and all cached data
+/// access methods will return valid data.
+/// <h2>When This Method Is Called</h2>
+/// <ul>
+///   <li>
+///     Site authentication was successful
+///   </li>
+///   <li>
+///     Site metadata and map data have been downloaded
+///   </li>
+///   <li>
+///     The interactive map has been rendered and is ready for user interaction
+///   </li>
+///   <li>
+///     Cache population has begun (will complete shortly after)
+///   </li>
+/// </ul>
+/// <h2>What You Can Do</h2>
+/// <ul>
+///   <li>
+///     Access cached data immediately using synchronous methods
+///   </li>
+///   <li>
+///     Enable map-related UI controls
+///   </li>
+///   <li>
+///     Show location lists or search interfaces
+///   </li>
+///   <li>
+///     Begin location selection or navigation operations
+///   </li>
+/// </ul>
+/// <h2>Example Implementation</h2>
+/// \code
+/// func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+///     print("Site loaded: \(site.siteName ?? "Unknown")")
+///     print("Buildings: \(site.buildings.count)")
+///
+///     // Enable UI controls
+///     searchButton.isEnabled = true
+///     locationButton.isEnabled = true
+///
+///     // Load initial data
+///     let locations = mapView.getLocations()
+///     let categories = mapView.getCategories()
+///     updateLocationList(locations)
+/// }
+///
+/// \endcodeimportant:
+/// This method is called on the main queue, making it safe to update UI elements.
+/// note:
+/// Cache population may still be in progress when this method is called,
+/// but synchronous data access methods will return valid cached data.
+/// \param mapView The BCMapView instance that rendered the site
+///
+/// \param site The BCSite object containing complete site information including
+/// buildings, floors, operation hours, and metadata
 ///
 - (void)mapView:(BCMapView * _Nonnull)mapView didRenderSite:(BCSite * _Nonnull)site;
 @optional
-/// mapView:didLoadData:
+/// Called when the cache has been populated with all data after site rendering.
+/// This optional delegate method is called after the site has been rendered and
+/// all location, category, and amenity data has been loaded into the cache.
+/// After this callback, all synchronous data access methods will return
+/// complete cached data.
+/// <h2>When This Method Is Called</h2>
 /// <ul>
 ///   <li>
-///     Called when the cache has been populated with all data after site rendering.
+///     Site rendering has completed successfully
 ///   </li>
 ///   <li>
-///     After this callback, synchronous data access methods will return cached data.
+///     All locations, categories, amenities, and happenings have been cached
+///   </li>
+///   <li>
+///     The cache state has changed to <code>.ready</code>
+///   </li>
+///   <li>
+///     Synchronous data access methods are now fully populated
 ///   </li>
 /// </ul>
-/// \param mapView BCMapView reference
+/// <h2>What You Can Do</h2>
+/// <ul>
+///   <li>
+///     Populate location lists with complete data
+///   </li>
+///   <li>
+///     Enable search functionality
+///   </li>
+///   <li>
+///     Show category filters
+///   </li>
+///   <li>
+///     Display amenity information
+///   </li>
+/// </ul>
+/// <h2>Example Implementation</h2>
+/// \code
+/// func mapView(_ mapView: BCMapView, didLoadData success: Bool) {
+///     if success {
+///         let locations = mapView.getLocations()
+///         let categories = mapView.getCategories()
+///         let amenities = mapView.getAmenityLocations()
 ///
-/// \param success Boolean indicating if cache population was successful
+///         updateLocationList(locations)
+///         setupCategoryFilters(categories)
+///         enableSearchFunctionality()
+///     } else {
+///         showErrorMessage("Failed to load map data")
+///     }
+/// }
+///
+/// \endcodenote:
+/// This method is called on the main queue.
+/// important:
+/// Even if success is false, some data may still be available in the cache.
+/// \param mapView The BCMapView instance that loaded the data
+///
+/// \param success Boolean indicating if cache population was successful.
+/// <code>true</code> means all data was loaded successfully,
+/// <code>false</code> indicates there were errors during data loading.
 ///
 - (void)mapView:(BCMapView * _Nonnull)mapView didLoadData:(BOOL)success;
 /// mapView:didChangeView:
@@ -586,15 +965,91 @@ SWIFT_PROTOCOL("_TtP11becomap_ios17BCMapViewDelegate_")
 ///
 - (void)mapView:(BCMapView * _Nonnull)mapView didReceiveSearchCategories:(NSArray<BCCategory *> * _Nonnull)categories;
 @required
-/// mapView:didReceiveError:
+/// Called when an error occurs during map operations or initialization.
+/// This method is called whenever the map encounters an error that prevents
+/// normal operation. Errors can occur during site loading, authentication,
+/// network communication, or map rendering.
+/// <h2>Common Error Scenarios</h2>
 /// <ul>
 ///   <li>
-///     Called when an error is received from the web interface.
+///     <em>Authentication Failure</em>: Invalid client credentials
+///   </li>
+///   <li>
+///     <em>Network Errors</em>: No internet connection or server unavailable
+///   </li>
+///   <li>
+///     <em>Site Not Found</em>: Invalid site ID or site not accessible
+///   </li>
+///   <li>
+///     <em>Rendering Errors</em>: Map data corruption or rendering failures
+///   </li>
+///   <li>
+///     <em>Permission Errors</em>: Insufficient permissions to access site data
 ///   </li>
 /// </ul>
-/// \param mapView BCMapView reference
+/// <h2>Error Payload</h2>
+/// The payload parameter contains error information that may include:
+/// <ul>
+///   <li>
+///     Error messages and descriptions
+///   </li>
+///   <li>
+///     HTTP status codes for network errors
+///   </li>
+///   <li>
+///     Detailed error context for debugging
+///   </li>
+/// </ul>
+/// <h2>Recommended Error Handling</h2>
+/// \code
+/// func mapView(_ mapView: BCMapView, didReceiveError payload: Any) {
+///     print("Map error: \(payload)")
 ///
-/// \param payload Any object containing error data
+///     // Parse error information
+///     if let errorDict = payload as? [String: Any],
+///        let message = errorDict["message"] as? String {
+///         showErrorAlert(message)
+///     } else {
+///         showErrorAlert("Failed to load map. Please try again.")
+///     }
+///
+///     // Disable map-related UI
+///     searchButton.isEnabled = false
+///     locationButton.isEnabled = false
+///
+///     // Optionally retry after delay
+///     DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+///         self.retryMapLoading()
+///     }
+/// }
+///
+/// \endcode<h2>Recovery Strategies</h2>
+/// important:
+/// This method is called on the main queue, making it safe to update UI elements.
+/// note:
+/// After an error occurs, the map may be in an unusable state until
+/// <code>renderSiteWith(clientId:clientSecret:siteId:)</code> is called again successfully.
+/// <ul>
+///   <li>
+///     Display user-friendly error messages
+///   </li>
+///   <li>
+///     Disable map-dependent UI elements
+///   </li>
+///   <li>
+///     Provide retry mechanisms for transient errors
+///   </li>
+///   <li>
+///     Log detailed error information for debugging
+///   </li>
+///   <li>
+///     Fallback to cached data if available
+///   </li>
+/// </ul>
+/// \param mapView The BCMapView instance that encountered the error
+///
+/// \param payload Error information object containing details about the failure.
+/// The structure varies depending on the error type.
 ///
 - (void)mapView:(BCMapView * _Nonnull)mapView didReceiveError:(id _Nonnull)payload;
 @end
@@ -649,39 +1104,180 @@ SWIFT_CLASS("_TtC11becomap_ios11BCRouteStep")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-/// Represents a site/location in the becomap system.
-/// A site is a physical location (like a mall, airport, hospital, etc.) that contains
-/// multiple buildings, floors, and points of interest. This class holds all the metadata
-/// about the site including its address, contact information, operating hours, and available languages.
+/// Represents a site/location in the beCoMap system.
+/// A site is a physical location (such as a shopping mall, airport, hospital, office complex,
+/// or university campus) that contains multiple buildings, floors, and points of interest.
+/// This class serves as the root container for all venue-related data and provides comprehensive
+/// metadata about the site including its address, contact information, operating hours,
+/// available languages, and structural organization.
+/// <h2>Site Hierarchy</h2>
+/// \code
+/// BCSite
+/// ├── buildings: [BCBuilding]
+/// │   └── floors: [BCMapFloor]
+/// │       └── locations: [BCLocation]
+/// ├── operationHours: [BCOperationHour]
+/// ├── languages: [BCLanguage]
+/// └── imageUrls: BCImageURLs
+///
+/// \endcode<h2>Usage Example</h2>
+/// \code
+/// func mapView(_ mapView: BCMapView, didRenderSite site: BCSite) {
+///     print("Loaded site: \(site.siteName ?? "Unknown")")
+///     print("Address: \(site.address ?? ""), \(site.city ?? "")")
+///     print("Buildings: \(site.buildings.count)")
+///
+///     // Access building information
+///     for building in site.buildings {
+///         print("Building: \(building.name ?? "Unnamed") - \(building.floors.count) floors")
+///     }
+///
+///     // Find a specific floor
+///     if let groundFloor = site.getFloor(withId: "ground-floor") {
+///         print("Found ground floor: \(groundFloor.name ?? "")")
+///     }
+/// }
+///
+/// \endcode<h2>Data Source</h2>
+/// Site data is automatically populated when <code>BCMapView.renderSiteWith(clientId:clientSecret:siteId:)</code>
+/// is called successfully. The data is parsed from the beCoMap service response and cached
+/// for immediate access.
+/// since:
+/// 1.0.0
+/// author:
+/// Beco
 SWIFT_CLASS("_TtC11becomap_ios6BCSite")
 @interface BCSite : NSObject
-/// Unique identifier for the site
+/// Unique identifier for the site.
+/// This is the primary key used to identify the site in the beCoMap system.
+/// It’s used in API calls and for caching purposes.
+/// note:
+/// This ID is provided by beCoMap and should not be modified.
 @property (nonatomic, readonly, copy) NSString * _Nullable id;
-/// Human-readable name of the site
+/// Human-readable name of the site.
+/// The display name of the venue, such as “Westfield Shopping Center”,
+/// “John F. Kennedy International Airport”, or “General Hospital”.
+/// <h2>Usage</h2>
+/// \code
+/// titleLabel.text = site.siteName ?? "Unknown Location"
+///
+/// \endcode
 @property (nonatomic, readonly, copy) NSString * _Nullable siteName;
-/// Street address of the site
-@property (nonatomic, readonly, copy) NSString * _Nullable address;
-/// City where the site is located
-@property (nonatomic, readonly, copy) NSString * _Nullable city;
-/// ISO country code (e.g., “US”, “CA”, “GB”)
-@property (nonatomic, readonly, copy) NSString * _Nullable countryCode;
-/// Postal/ZIP code of the site
-@property (nonatomic, readonly, copy) NSString * _Nullable postal;
-/// State/province where the site is located
-@property (nonatomic, readonly, copy) NSString * _Nullable state;
-/// Contact telephone number for the site
-@property (nonatomic, readonly, copy) NSString * _Nullable telephone;
-/// Timezone identifier (e.g., “America/New_York”)
-@property (nonatomic, readonly, copy) NSString * _Nullable tzId;
-/// UTC offset in hours (e.g., “-5” for EST)
-@property (nonatomic, readonly, copy) NSString * _Nullable utcOffset;
-/// Website URL for the site
-@property (nonatomic, readonly, copy) NSString * _Nullable link;
-/// Type/category of the site (e.g., “MALL”, “AIRPORT”, “HOSPITAL”)
+/// Type or category of the site.
+/// Indicates the general category of the venue, such as:
+/// <ul>
+///   <li>
+///     “MALL” for shopping centers
+///   </li>
+///   <li>
+///     “AIRPORT” for airports
+///   </li>
+///   <li>
+///     “HOSPITAL” for medical facilities
+///   </li>
+///   <li>
+///     “OFFICE” for office complexes
+///   </li>
+///   <li>
+///     “UNIVERSITY” for educational campuses
+///   </li>
+/// </ul>
+/// This can be used for customizing UI or behavior based on venue type.
 @property (nonatomic, readonly, copy) NSString * _Nullable type;
-/// List of buildings within this site
+/// Street address of the site.
+/// The physical street address including street number and name.
+/// Example: “123 Main Street” or “1000 Airport Boulevard”
+@property (nonatomic, readonly, copy) NSString * _Nullable address;
+/// City where the site is located.
+/// The city name where the venue is situated.
+/// Example: “New York”, “Los Angeles”, “Toronto”
+@property (nonatomic, readonly, copy) NSString * _Nullable city;
+/// State or province where the site is located.
+/// The state, province, or administrative region.
+/// Example: “NY”, “California”, “Ontario”
+@property (nonatomic, readonly, copy) NSString * _Nullable state;
+/// ISO country code for the site’s location.
+/// Two-letter ISO 3166-1 alpha-2 country code.
+/// Examples: “US”, “CA”, “GB”, “AU”, “DE”
+/// <h2>Usage</h2>
+/// \code
+/// let flagEmoji = countryCodeToFlag(site.countryCode ?? "US")
+///
+/// \endcode
+@property (nonatomic, readonly, copy) NSString * _Nullable countryCode;
+/// Postal or ZIP code of the site.
+/// The postal code for the site’s address.
+/// Examples: “10001”, “90210”, “M5V 3A8”
+@property (nonatomic, readonly, copy) NSString * _Nullable postal;
+/// Primary contact telephone number for the site.
+/// The main phone number for the venue, typically for general inquiries
+/// or customer service. Format may vary by region.
+/// <h2>Usage</h2>
+/// \code
+/// if let phone = site.telephone {
+///     let url = URL(string: "tel:\(phone)")
+///     UIApplication.shared.open(url!)
+/// }
+///
+/// \endcode
+@property (nonatomic, readonly, copy) NSString * _Nullable telephone;
+/// Website URL for the site.
+/// The official website or landing page for the venue.
+/// Can be used to provide additional information or services.
+/// <h2>Usage</h2>
+/// \code
+/// if let urlString = site.link, let url = URL(string: urlString) {
+///     UIApplication.shared.open(url)
+/// }
+///
+/// \endcode
+@property (nonatomic, readonly, copy) NSString * _Nullable link;
+/// Timezone identifier for the site’s location.
+/// IANA timezone identifier (e.g., “America/New_York”, “Europe/London”).
+/// Used for displaying local times and handling time-sensitive operations.
+/// <h2>Usage</h2>
+/// \code
+/// if let tzId = site.tzId {
+///     let timeZone = TimeZone(identifier: tzId)
+///     let formatter = DateFormatter()
+///     formatter.timeZone = timeZone
+/// }
+///
+/// \endcode
+@property (nonatomic, readonly, copy) NSString * _Nullable tzId;
+/// UTC offset in hours for the site’s timezone.
+/// String representation of the timezone offset from UTC.
+/// Examples: “-5” (EST), “+1” (CET), “+9” (JST)
+/// note:
+/// This is a string to handle fractional offsets like “+5:30”
+@property (nonatomic, readonly, copy) NSString * _Nullable utcOffset;
+/// Array of buildings within this site.
+/// Contains all buildings that are part of this venue. Each building
+/// contains floors, and each floor contains locations and points of interest.
+/// <h2>Usage</h2>
+/// \code
+/// for building in site.buildings {
+///     print("Building: \(building.name ?? "Unnamed")")
+///     for floor in building.floors {
+///         print("  Floor: \(floor.name ?? "Unnamed")")
+///     }
+/// }
+///
+/// \endcodenote:
+/// Even single-building sites will have at least one BCBuilding object.
 @property (nonatomic, readonly, copy) NSArray<BCBuilding *> * _Nonnull buildings;
-/// URLs for site images in different sizes
+/// URLs for site images in different sizes and formats.
+/// Contains URLs for various site images including logos, banners,
+/// and promotional images in different resolutions for different use cases.
+/// <h2>Usage</h2>
+/// \code
+/// if let imageUrls = site.imageUrls {
+///     // Load appropriate image based on screen size
+///     let imageUrl = imageUrls.large ?? imageUrls.medium ?? imageUrls.small
+///     loadImage(from: imageUrl)
+/// }
+///
+/// \endcode
 @property (nonatomic, readonly, strong) BCImageURLs * _Nullable imageUrls;
 /// Operating hours for different days of the week
 @property (nonatomic, readonly, copy) NSArray<BCOperationHour *> * _Nonnull operationHours;

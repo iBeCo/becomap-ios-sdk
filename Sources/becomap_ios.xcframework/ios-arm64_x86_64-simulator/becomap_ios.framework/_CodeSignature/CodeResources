@@ -6,7 +6,7 @@
 	<dict>
 		<key>Headers/becomap_ios-Swift.h</key>
 		<data>
-		mG4+TOSeO9CRRSevrR/ykmSC5bA=
+		ymZNmhtxHzT88u61ssEv6Y3u9uY=
 		</data>
 		<key>Headers/becomap_ios.h</key>
 		<data>
@@ -14,123 +14,123 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		N8d74237Cy0wqP+u+vPy7fCeiJo=
+		TBq3CwgSzwFTnHVMTJRDWi7TLfM=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
-		Wiy6ZothE0hOCsxxOAUB803s+Nk=
+		1xb281M7JEEJgH2xnvyaeA1irPk=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
-		kA3uOZWPEfmt0OLToi1FxP+Lmt8=
+		hwCv4+b+dZJFbHp6j5HZ46NkZts=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		yyVbfKmUNupSUwhOfhj/uxMXaOw=
+		FD4YiZabUiKV+PkdJFiCCcZ3bhg=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		kA3uOZWPEfmt0OLToi1FxP+Lmt8=
+		hwCv4+b+dZJFbHp6j5HZ46NkZts=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		D3lsRmSLkr25fCAI34gBD9OsD1I=
+		VNuwMBobBmPHXwaEx9Z2JMK8KWU=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
-		Wiy6ZothE0hOCsxxOAUB803s+Nk=
+		1xb281M7JEEJgH2xnvyaeA1irPk=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<data>
-		OR6LKQzCzu1wqVpBHGC0y71/Kw0=
+		XSwK1cSYzFmmk6HzQKHA3sprd5o=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		TNWl0v4/lzeQaJA1mtV9sQ+ANnQ=
+		CGpr7hdl2nFJvIQ5/HXljhEpASM=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		OR6LKQzCzu1wqVpBHGC0y71/Kw0=
+		XSwK1cSYzFmmk6HzQKHA3sprd5o=
 		</data>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		H0so+SfA4KMgVmiXRg0h7eFIkk4=
+		1/zcLFRMcp9W6vngiIzkl22Igf0=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
 		gOa5NVhVafgvG5yX15gL/xQKQzI=
 		</data>
-		<key>becomap.13a3fa1e9a08bf8d28f7.js</key>
+		<key>becomap.0ca0eec7e2015f8fa208.js</key>
 		<data>
-		AwGg5nA5eU4H59hlkd9uPBq9ZX8=
+		vXBJlu2tJgunIkviCgNfxG1Tcc0=
 		</data>
-		<key>becomap.1fe3a2f374259e28eacf.js</key>
+		<key>becomap.3675f6a13977dfaaa3ff.js</key>
 		<data>
-		mfLolPSjY0zUxRJOHkMYGiv39as=
+		RGnqs6alXUy/7weF7/AdrrgaGbo=
 		</data>
-		<key>becomap.1fe3a2f374259e28eacf.js.LICENSE.txt</key>
+		<key>becomap.6a083e1d27e1299e4a53.js</key>
 		<data>
-		XROdR38WFO1+21UsAj9MmGDdF+U=
+		6okkT2POBgDMGJC/1EeSGkHPkwM=
 		</data>
-		<key>becomap.2179ed9422554773b7b9.js</key>
+		<key>becomap.8d35b890630b2a072e64.js</key>
 		<data>
-		MAzbleXYyqImRjRm/TVLn4WT3XE=
+		JYwaOp/fFltpeZ4zorFmoe6XiJs=
 		</data>
-		<key>becomap.40862f13f40266429f87.js</key>
-		<data>
-		+WNVTWVJLWVCCo9qLQ6t8pueG1Q=
-		</data>
-		<key>becomap.4a8969fe27be50ac6cd0.js</key>
-		<data>
-		3tTww6Kw0DQ2zcONH0vikvYBiNE=
-		</data>
-		<key>becomap.4a8969fe27be50ac6cd0.js.LICENSE.txt</key>
-		<data>
-		IwZaComA+6XhYon52KgMGMdc0Zo=
-		</data>
-		<key>becomap.4aaf25331494f3d9d7c0.js</key>
-		<data>
-		pk1RrRaWZNmEX4suddyZwsyx1fA=
-		</data>
-		<key>becomap.6a3c1f362006b9487e7c.js</key>
-		<data>
-		eni/IsLf3g7TXqFftid4RwitkFw=
-		</data>
-		<key>becomap.72e342883ae90cfd42c7.js</key>
-		<data>
-		WCh7z/hkSiwlfS+yRk8S+Dc4+mM=
-		</data>
-		<key>becomap.72e342883ae90cfd42c7.js.LICENSE.txt</key>
-		<data>
-		XROdR38WFO1+21UsAj9MmGDdF+U=
-		</data>
-		<key>becomap.7556e2e676bf0ce9b56d.js</key>
-		<data>
-		bW6ziGOjgCShqCFRVSa2TokXn8E=
-		</data>
-		<key>becomap.9b6881a775d595fd4832.js</key>
-		<data>
-		N4kD+NdAhqRcNrwMndpEK7vgDHc=
-		</data>
-		<key>becomap.9b6881a775d595fd4832.js.LICENSE.txt</key>
+		<key>becomap.8d35b890630b2a072e64.js.LICENSE.txt</key>
 		<data>
 		XJd9vDHfeHEKeYsF702v/Yo2SWg=
 		</data>
-		<key>becomap.a20a2d43bde4d0fc0fb1.js</key>
+		<key>becomap.90e397d2eea74fd3fb97.js</key>
 		<data>
-		1Yi9cL4dSXVbInxtvbKeCpG7cHw=
+		qMFkqgWwYxr0zRoKsj6szfzL9s4=
 		</data>
-		<key>becomap.d2e9105c05a41225fa4c.js</key>
+		<key>becomap.9b28ad0ec44a28b2c23d.js</key>
 		<data>
-		QB7C0uMPWqqBWZs7VY4EDg80k5A=
+		DB7IFDMMTjuedI7FNrBps45Eg+M=
 		</data>
-		<key>becomap.ddf6d3067128c34e5ac0.js</key>
+		<key>becomap.9b28ad0ec44a28b2c23d.js.LICENSE.txt</key>
 		<data>
-		2BSGj5Ph0nj0BeN4IxnsPU0J9q0=
+		XROdR38WFO1+21UsAj9MmGDdF+U=
+		</data>
+		<key>becomap.9e0dc9fc29108739f6ed.js</key>
+		<data>
+		Vyws06SRQatFyPaSXkg0UaTzx6c=
+		</data>
+		<key>becomap.9e0dc9fc29108739f6ed.js.LICENSE.txt</key>
+		<data>
+		XROdR38WFO1+21UsAj9MmGDdF+U=
+		</data>
+		<key>becomap.a56b0eaaab42c56bc809.js</key>
+		<data>
+		PKXiI8uO1msMRz2UgzGZ7/KqlXs=
+		</data>
+		<key>becomap.aa2c2183b045808c83da.js</key>
+		<data>
+		+/roX2EdhNSWuGo+B9fJ3+1eFl8=
+		</data>
+		<key>becomap.aa2c2183b045808c83da.js.LICENSE.txt</key>
+		<data>
+		IwZaComA+6XhYon52KgMGMdc0Zo=
+		</data>
+		<key>becomap.b97d5d8973bc5bdcc60a.js</key>
+		<data>
+		58WWuF82lzmkfQFkNxwKOrfX9mc=
+		</data>
+		<key>becomap.dc98b88d43af8e4b8d19.js</key>
+		<data>
+		64yRDi6RE+5cpHI3Gfgz8i7ugsQ=
+		</data>
+		<key>becomap.e96123e11903e438099b.js</key>
+		<data>
+		Urd2WXbnXLCmbBTx00JzArOMsGg=
+		</data>
+		<key>becomap.ea9df01eead9c90defd9.js</key>
+		<data>
+		vBu5I1Y/jl8P4fkSo9e0WobKwtc=
 		</data>
 		<key>index.html</key>
 		<data>
-		XkQ1lS2QF8ny6z8YcvfN9KW4Ns0=
+		mg2P4SORGFRd0nv+eOkiimxxjPs=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -139,7 +139,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			90OjWu0bS+kh/hniyaS0UZHVZV2aGoT2ydE+FGYxJ5k=
+			TIf37xujgHzahU41dijyTjXum5jHZaulA8wL5HG2LDQ=
 			</data>
 		</dict>
 		<key>Headers/becomap_ios.h</key>
@@ -153,70 +153,70 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			B0CPWh4sZx4yHfT68Ji/7VIovl8uwa0A7mlCAZpQciE=
+			wFrKQbqF3zrA2WWLQ1/Om7x64exDuG05qKabd+F/Tyc=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			n8xh00p6ozgClY/hPRiTDYBgddPdR9RnvPzp5il4pwE=
+			TEJDsRtuX8Fm3r+t8YJABJ9BHqualVMI7r7FA2RCh1E=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			e1Sr6n4HDlUoiOjKf+R49gYez1KJrQJ8A+wiIS1ECy4=
+			FlnYKV1w5ONpGBUwEP6XgY0FG14zQPaiyhJw3eAxLoU=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			n8xh00p6ozgClY/hPRiTDYBgddPdR9RnvPzp5il4pwE=
+			TEJDsRtuX8Fm3r+t8YJABJ9BHqualVMI7r7FA2RCh1E=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			7phgoctz6A4GuOEl5dVcZ+OimAKpKobuCD6zZsHbO0g=
+			egPWTmUzixZjEKLvLKQSi7WpCY6akCpAW4PGeALJTLY=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			B0CPWh4sZx4yHfT68Ji/7VIovl8uwa0A7mlCAZpQciE=
+			wFrKQbqF3zrA2WWLQ1/Om7x64exDuG05qKabd+F/Tyc=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Lr03A/qK0wk3ikAxpwOJ4QLZtuscxLWa3Us49r+3p0s=
+			xDjNPgczFmRiNN3GwIakNZH0aSN8dMJWX9NGGrPYklI=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			IfWK9CcSSNp+9tiH7utm8MEtkq3gOQyplpdarMNBrH4=
+			1ABpCIa/nNJO9dgpWws1mqR2RNY0o+EVx+UgyMjdCZQ=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Lr03A/qK0wk3ikAxpwOJ4QLZtuscxLWa3Us49r+3p0s=
+			xDjNPgczFmRiNN3GwIakNZH0aSN8dMJWX9NGGrPYklI=
 			</data>
 		</dict>
 		<key>Modules/becomap_ios.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			O96IDkJ911zQbe9uOi0HJ1quRyc8Jlisb4jBYq2PeAk=
+			N9LJQIM1Pkyx6eYUZuuptHgwzizamv7uTzeF1WFUaSk=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
@@ -226,130 +226,130 @@
 			3FdBRW+4btPVXy7/fZ8wrKf401WWrc+EsS8XEswrabg=
 			</data>
 		</dict>
-		<key>becomap.13a3fa1e9a08bf8d28f7.js</key>
+		<key>becomap.0ca0eec7e2015f8fa208.js</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			YFx6xCIrIrPiFl/W9jpzJDMsw/DUYlQbO1SmptX7MK4=
+			JavXwFmwem2SmxO/aiDA7OMTsOXL8S6JcMmhjkG5dR8=
 			</data>
 		</dict>
-		<key>becomap.1fe3a2f374259e28eacf.js</key>
+		<key>becomap.3675f6a13977dfaaa3ff.js</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ZYtIhKW3J5WBJR8qyQaWNYeXSt6IRvBNUdmXpe2Fnso=
+			IFNFOlVMlymaGLnDsOfEDDnVRN7bS90d+GXixOCy0Wk=
 			</data>
 		</dict>
-		<key>becomap.1fe3a2f374259e28eacf.js.LICENSE.txt</key>
+		<key>becomap.6a083e1d27e1299e4a53.js</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			zUO4yzNggYoe3hQ8CQXtZ46f6YklPKvmx+KmPUp+lnM=
+			JFR9EPNTXODZEUeq37fi6bcDXude+fEsgdXOw3kGLQQ=
 			</data>
 		</dict>
-		<key>becomap.2179ed9422554773b7b9.js</key>
+		<key>becomap.8d35b890630b2a072e64.js</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			qyNaZ+EYpj9w9Bl/yw4Nkr8/hvAMhvBD+4F3xOg8FfU=
+			TZ7wZ2CCPXp6qOXLJvrRmZ19zBtr7yxxXyxzAv14IP0=
 			</data>
 		</dict>
-		<key>becomap.40862f13f40266429f87.js</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			zeV7iCOiVsxqip9qTq53iZKyarDqPrRd4LP/42DFCoI=
-			</data>
-		</dict>
-		<key>becomap.4a8969fe27be50ac6cd0.js</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			paRp8UdtJ8Ns5JEkiMcYT3M7sqycoLxdXYfj8MFP4uU=
-			</data>
-		</dict>
-		<key>becomap.4a8969fe27be50ac6cd0.js.LICENSE.txt</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			QOWFFOfprwhn+4+RiUyFnKoEKGAixpvcRb28+mpAHTM=
-			</data>
-		</dict>
-		<key>becomap.4aaf25331494f3d9d7c0.js</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			cow/8n91XSYCcIoCThv+wDd9WAcEEEw1pbIvzB68pUs=
-			</data>
-		</dict>
-		<key>becomap.6a3c1f362006b9487e7c.js</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			9OKHGn2iPH8tkAfDC4mQyZ3zVrvFYY0KwS5yi9OsaEE=
-			</data>
-		</dict>
-		<key>becomap.72e342883ae90cfd42c7.js</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			sfvoW8VBsyY0IOBqdJk1dENP+N8ixXiNIyq3Hzc/HHU=
-			</data>
-		</dict>
-		<key>becomap.72e342883ae90cfd42c7.js.LICENSE.txt</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			zUO4yzNggYoe3hQ8CQXtZ46f6YklPKvmx+KmPUp+lnM=
-			</data>
-		</dict>
-		<key>becomap.7556e2e676bf0ce9b56d.js</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			cNgPTgiOvJPwRN+zX7ogUfYRaIGfSx5CfonnsiVbbbI=
-			</data>
-		</dict>
-		<key>becomap.9b6881a775d595fd4832.js</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			Ylafz7AZtnj1AMHuSCXBH8MyRBP/VYcmzS7rZ2LKNkY=
-			</data>
-		</dict>
-		<key>becomap.9b6881a775d595fd4832.js.LICENSE.txt</key>
+		<key>becomap.8d35b890630b2a072e64.js.LICENSE.txt</key>
 		<dict>
 			<key>hash2</key>
 			<data>
 			OSTcC5T7CSXFttDlmGTNW4677oHbvknYscnapl25JIw=
 			</data>
 		</dict>
-		<key>becomap.a20a2d43bde4d0fc0fb1.js</key>
+		<key>becomap.90e397d2eea74fd3fb97.js</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			6X/TEnIdN49q5i1ZTfeI8CAqACW/9Z0D6c34+8v4nX0=
+			ee79HiyfRGfCm1PjQscI1M0xdNZWyiEcf54DsSc27Nc=
 			</data>
 		</dict>
-		<key>becomap.d2e9105c05a41225fa4c.js</key>
+		<key>becomap.9b28ad0ec44a28b2c23d.js</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			tmD4N+28+ib0SPzgVtNdXUa3s+Y88L5cJG+2SRKG2J8=
+			IedxMuZ4Z4F2NLdLpTCjEZptgCeyY2WaYLoAj7+ZNLk=
 			</data>
 		</dict>
-		<key>becomap.ddf6d3067128c34e5ac0.js</key>
+		<key>becomap.9b28ad0ec44a28b2c23d.js.LICENSE.txt</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			aNCQV2oyDnsXz7wW3hD0I77qSmIfx6i+khE5lIhUlD4=
+			zUO4yzNggYoe3hQ8CQXtZ46f6YklPKvmx+KmPUp+lnM=
+			</data>
+		</dict>
+		<key>becomap.9e0dc9fc29108739f6ed.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			SG2snXcrMHiA65XNrhTMdZ3qfcvfaJJo9KpmIx5Y7zY=
+			</data>
+		</dict>
+		<key>becomap.9e0dc9fc29108739f6ed.js.LICENSE.txt</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			zUO4yzNggYoe3hQ8CQXtZ46f6YklPKvmx+KmPUp+lnM=
+			</data>
+		</dict>
+		<key>becomap.a56b0eaaab42c56bc809.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			PI/KzttACgVp4veoaChhUhvh9p3V3842ygKeQTtQMbQ=
+			</data>
+		</dict>
+		<key>becomap.aa2c2183b045808c83da.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			z6eo4b5ZhPeUc9QKLc7E5/qTm2bgPUpxbinZN6ZUZDg=
+			</data>
+		</dict>
+		<key>becomap.aa2c2183b045808c83da.js.LICENSE.txt</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QOWFFOfprwhn+4+RiUyFnKoEKGAixpvcRb28+mpAHTM=
+			</data>
+		</dict>
+		<key>becomap.b97d5d8973bc5bdcc60a.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			cdsvp+UzKIndigwzE7oLCIeHy93+BGhS3Iugcam9gEc=
+			</data>
+		</dict>
+		<key>becomap.dc98b88d43af8e4b8d19.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			uW+KgvEWH7sO0vA7N0Edt6jldOUuIqDoFaDuRzdziGc=
+			</data>
+		</dict>
+		<key>becomap.e96123e11903e438099b.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			hMHytqLESrbAso8+l7l7no1p/w4g0YxRKZSYz8/woUY=
+			</data>
+		</dict>
+		<key>becomap.ea9df01eead9c90defd9.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			YUuRX7jYNUJOLc4QVHOTlZYerZqnwi48rGBy3jl9qXo=
 			</data>
 		</dict>
 		<key>index.html</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			QELlQnYvTQAXsuQYQvYKoJn2kcJ/WB/0oygatxk1Z40=
+			S2/n3ZHbYe8Bg8pvTXvWhl6mqdo6y5oy+eaoqPmf4Jo=
 			</data>
 		</dict>
 	</dict>
