@@ -7,5 +7,4 @@ framework module becomap_ios {
 
 module becomap_ios.Swift {
   header "becomap_ios-Swift.h"
-  requires objc
 }
