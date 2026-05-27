@@ -59,7 +59,7 @@ class BEShadowView: UIView {
     /**
      Updates all layer properties according to the public properties of the `ShadowView`.
      */
-    fileprivate func updateProperties() {
+    internal override func updateProperties() {
         layer.cornerRadius = cornerRadius
         layer.shadowColor = shadowColor.cgColor
         layer.shadowOffset = shadowOffset
